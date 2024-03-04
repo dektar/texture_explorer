@@ -6,13 +6,19 @@ import { initBuffers } from "./init_buffers.js";
 
 main();
 
+/**
+ * TODOs
+ * gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureCanvas);
+ *   can pass in pixels
+ * load other shapes besides plane
+ * 3D coordinates of mouse in webgl canvas: https://stackoverflow.com/questions/60136758/get-3d-coordinates-of-a-mouse-click-in-webgl
+ */
+
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/
 //
 function main() {
   const canvas = document.querySelector("#glcanvas");
-  initializeTextureCanvas();
-
   // Initialize the GL context
   const gl = canvas.getContext("webgl");
 
@@ -32,25 +38,27 @@ function main() {
   // Vertex shader program
   const vsSource = `
     attribute vec4 aVertexPosition;
-    attribute vec4 aVertexColor;
+    attribute vec2 aTextureCoord;
 
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
 
-    varying lowp vec4 vColor;
+    varying highp vec2 vTextureCoord;
 
     void main(void) {
       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-      vColor = aVertexColor;
+      vTextureCoord = aTextureCoord;
     }
   `;
 
   // Fragment shader program
   const fsSource = `
-    varying lowp vec4 vColor;
+    varying highp vec2 vTextureCoord;
+
+    uniform sampler2D uSampler;
 
     void main(void) {
-      gl_FragColor = vColor;
+      gl_FragColor = texture2D(uSampler, vTextureCoord);
     }
   `;
 
@@ -66,11 +74,12 @@ function main() {
     program: shaderProgram,
     attribLocations: {
       vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
-      vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor"),
+      textureCoord: gl.getAttribLocation(shaderProgram, "aTextureCoord"),
     },
     uniformLocations: {
       projectionMatrix: gl.getUniformLocation(shaderProgram, "uProjectionMatrix"),
       modelViewMatrix: gl.getUniformLocation(shaderProgram, "uModelViewMatrix"),
+      uSampler: gl.getUniformLocation(shaderProgram, "uSampler"),
     },
   };
 
@@ -78,8 +87,16 @@ function main() {
   // objects we'll be drawing.
   const buffers = initBuffers(gl);
 
-  // Draw the scene
-  drawScene(gl, programInfo, buffers);
+  // Load the texture from the texture canvas.
+  const texture = loadTexture(gl);
+  // Flip image pixels into the bottom-to-top order that WebGL expects.
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+  initializeTextureCanvas(() => {
+    updateTexture(gl, texture, document.querySelector("#texturecanvas"));
+    // Draw the scene
+    drawScene(gl, programInfo, buffers, texture);
+  });
 }
 
 //
@@ -138,10 +155,37 @@ function loadShader(gl, type, source) {
   return shader;
 }
 
-function initializeTextureCanvas() {
+//
+// Initialize a texture from textureCanvas.
+//
+function loadTexture(gl) {
+  const texture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  return texture;
+}
+
+function updateTexture(gl, texture, textureCanvas) {
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  const level = 0;
+  const internalFormat = gl.RGBA;
+  const srcFormat = gl.RGBA;
+  const srcType = gl.UNSIGNED_BYTE;
+  gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, textureCanvas);
+
+  // TextureCanvas is a power of 2 so we can generate mipmaps.
+  // gl.generateMipmap(gl.TEXTURE_2D);
+
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+  return texture;
+}
+
+function initializeTextureCanvas(callback) {
   const textureCanvas = document.querySelector("#texturecanvas");
   const context = textureCanvas.getContext("2d");
-  clearTexture();
+  clearTexture(textureCanvas, callback);
 
   let drawing = false;
 
@@ -157,9 +201,11 @@ function initializeTextureCanvas() {
     context.stroke();
     // https://css-tricks.com/snippets/javascript/random-hex-color/
     context.strokeStyle = '#' + Math.floor(Math.random()*16777215).toString(16);
+    callback();
   });
   textureCanvas.addEventListener('mouseup', (event) => {
     drawing = false;
+    callback();
   });
   textureCanvas.addEventListener('mousemove', (event) => {
     if (drawing) {
@@ -168,17 +214,17 @@ function initializeTextureCanvas() {
         const y = event.clientY - bounds.top;
         context.lineTo(x, y);
         context.stroke();
+        callback();
     }
   });
 
   // Set up "clear" button.
   const clearBtn = document.getElementById("clear");
-  clearBtn.onclick = () => clearTexture();
+  clearBtn.onclick = () => clearTexture(textureCanvas, callback);
 }
 
 /** Resets the texture image to the defaults. */
-function clearTexture() {
-  const textureCanvas = document.querySelector("#texturecanvas");
+function clearTexture(textureCanvas, callback) {
   const context = textureCanvas.getContext("2d");
   const width = textureCanvas.width;
   const height = textureCanvas.height;
@@ -198,4 +244,5 @@ function clearTexture() {
     context.lineTo(width, yStep);
     context.stroke();
   }
+  callback();
 }

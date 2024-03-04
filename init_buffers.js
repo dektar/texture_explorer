@@ -1,10 +1,12 @@
 function initBuffers(gl) {
   const positionBuffer = initPositionBuffer(gl);
-  const colorBuffer = initColorBuffer(gl);
+  // const colorBuffer = initColorBuffer(gl);
+  const textureCoordBuffer = initTextureBuffer(gl);
 
   return {
     position: positionBuffer,
-    color: colorBuffer,
+    // color: colorBuffer,
+    textureCoord: textureCoordBuffer,
   };
 }
 
@@ -26,6 +28,20 @@ function initPositionBuffer(gl) {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
   return positionBuffer;
+}
+
+function initTextureBuffer(gl) {
+  const textureCoordBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
+
+  const textureCoordinates = [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0];
+
+  // Now pass the list of positions into WebGL to build the
+  // shape. We do this by creating a Float32Array from the
+  // JavaScript array, then use it to fill the current buffer.
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
+
+  return textureCoordBuffer;
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Using_shaders_to_apply_color_in_WebGL
