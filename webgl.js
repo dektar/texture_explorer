@@ -161,6 +161,7 @@ function loadShader(gl, type, source) {
 function loadTexture(gl) {
   const texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.generateMipmap(gl.TEXTURE_2D);
   return texture;
 }
 
@@ -172,59 +173,95 @@ function updateTexture(gl, texture, textureCanvas) {
   const srcType = gl.UNSIGNED_BYTE;
   gl.texImage2D(gl.TEXTURE_2D, level, internalFormat, srcFormat, srcType, textureCanvas);
 
-  // TextureCanvas is a power of 2 so we can generate mipmaps.
-  // gl.generateMipmap(gl.TEXTURE_2D);
+  
+  // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  const useNearestNeighbor = document.getElementById("nearestNeighbor").checked;
+  if (useNearestNeighbor) {
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  } else {
+    // TextureCanvas is a power of 2 so we can generate mipmaps.
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+  }
 
   return texture;
 }
 
-function initializeTextureCanvas(callback) {
+function initializeTextureCanvas(refreshTextureCallback) {
   const textureCanvas = document.querySelector("#texturecanvas");
   const context = textureCanvas.getContext("2d");
-  clearTexture(textureCanvas, callback);
+  clearTexture(textureCanvas, refreshTextureCallback);
 
   let drawing = false;
 
-  // Set up mouse listeners.
-  textureCanvas.addEventListener('mousedown', (event) => {
-    drawing = true;
+  const startEventListener = (clientX, clientY) => {
     const bounds = textureCanvas.getBoundingClientRect();
-    const x = event.clientX - bounds.left;
-    const y = event.clientY - bounds.top;
+    const x = clientX - bounds.left;
+    const y = clientY - bounds.top;
+    drawing = true;
     context.beginPath();
     context.moveTo(x - 1, y - 1);
     context.lineTo(x + 1, y + 1);
     context.stroke();
     // https://css-tricks.com/snippets/javascript/random-hex-color/
     context.strokeStyle = '#' + Math.floor(Math.random()*16777215).toString(16);
-    callback();
-  });
-  textureCanvas.addEventListener('mouseup', (event) => {
+    refreshTextureCallback();
+  };
+  const moveEventListener = (clientX, clientY) => {
+    if (drawing) {
+      const bounds = textureCanvas.getBoundingClientRect();
+      const x = clientX - bounds.left;
+      const y = clientY - bounds.top;
+      context.lineTo(x, y);
+      context.stroke();
+      refreshTextureCallback();
+    }
+  };
+  const upEventListener = () => {
     drawing = false;
-    callback();
+    refreshTextureCallback();
+  };
+
+  // Set up mouse listeners on the texture canvas.
+  textureCanvas.addEventListener('mousedown', (event) => {
+    startEventListener(event.clientX, event.clientY);
+  });
+  textureCanvas.addEventListener('touchstart', (event) => {
+    event.preventDefault();
+    const x = event.touches[0].clientX;
+    const y = event.touches[0].clientY;
+    startEventListener(x, y);
   });
   textureCanvas.addEventListener('mousemove', (event) => {
-    if (drawing) {
-        const bounds = textureCanvas.getBoundingClientRect();
-        const x = event.clientX - bounds.left;
-        const y = event.clientY - bounds.top;
-        context.lineTo(x, y);
-        context.stroke();
-        callback();
-    }
+    moveEventListener(event.clientX, event.clientY);
   });
+  textureCanvas.addEventListener('touchmove', (event) => {
+    event.preventDefault();
+    const x = event.touches[0].clientX;
+    const y = event.touches[0].clientY;
+    moveEventListener(x, y);
+  });
+  textureCanvas.addEventListener('mouseup', upEventListener);
+  textureCanvas.addEventListener('touchend', upEventListener);
+
+  // Set up GUI.
 
   // Set up "clear" button.
   const clearBtn = document.getElementById("clear");
-  clearBtn.onclick = () => clearTexture(textureCanvas, callback);
+  clearBtn.onclick = () => clearTexture(textureCanvas, refreshTextureCallback);
+
+  // Nearest neighbor checkbox.
+  const nearestNeighborBtn = document.getElementById("nearestNeighbor");
+  nearestNeighborBtn.addEventListener("change", () => {
+    refreshTextureCallback();
+  });
 }
 
 /** Resets the texture image to the defaults. */
-function clearTexture(textureCanvas, callback) {
+function clearTexture(textureCanvas, refreshTextureCallback) {
   const context = textureCanvas.getContext("2d");
   const width = textureCanvas.width;
   const height = textureCanvas.height;
@@ -244,5 +281,5 @@ function clearTexture(textureCanvas, callback) {
     context.lineTo(width, yStep);
     context.stroke();
   }
-  callback();
+  refreshTextureCallback();
 }
