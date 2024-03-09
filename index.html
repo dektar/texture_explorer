@@ -13,9 +13,17 @@
 
   <body>
     <canvas id="glcanvas" width="640" height="480"></canvas>
-    <canvas id="texturecanvas" width="512" height="512"></canvas>
+    <canvas id="texturecanvas" width="512" height="512" style="image-rendering: pixelated;"></canvas>
+    <br/>
     <input type="button" value="clear" id="clear"></input>
-    <input type="checkbox" value="nearest neighbor" id="nearestNeighbor"/>
+    <br/>
+    <input type="checkbox" value="nearest neighbor" id="nearestNeighbor" checked/>
     <label for="nearestNeighbor">Nearest neighbor</label>
+    <br/>
+    <input type="range" min="0" max="359" value="25" id="rotation"/>
+    <label for="rotation">Z axis rotation</label>
+    <br/>
+    <input type="range" min="20" max="200" value="100" id="scale"/>
+    <label for="scale">Object scale</label>
 </body>
 </html>

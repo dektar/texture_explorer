@@ -1,8 +1,9 @@
 // python2 -m SimpleHTTPServer 9000
 // navigate to localhost:90000
 
-import { drawScene } from "./draw_scene.js";
+import { drawScene, modelViewMatrix, projectionMatrix } from "./draw_scene.js";
 import { initBuffers } from "./init_buffers.js";
+import {initializeTextureCanvas} from "./texture.js";
 
 main();
 
@@ -92,10 +93,73 @@ function main() {
   // Flip image pixels into the bottom-to-top order that WebGL expects.
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
-  initializeTextureCanvas(() => {
-    updateTexture(gl, texture, document.querySelector("#texturecanvas"));
+  initializeTextureCanvas((useNearestNeighbor, rotation, scale) => {
+    updateTexture(gl, texture, document.querySelector("#texturecanvas"), useNearestNeighbor);
     // Draw the scene
-    drawScene(gl, programInfo, buffers, texture);
+    drawScene(gl, programInfo, buffers, texture, rotation, scale);
+  });
+
+  canvas.addEventListener("mousemove", (event) => {
+    const bounds = canvas.getBoundingClientRect();
+    const x = event.clientX - bounds.left;
+    const y = event.clientY - bounds.top;
+    const z = 1; // clip plane at z
+    const screenPoint = vec3.fromValues(2 * x / bounds.width - 1, 1 - 2 * y / bounds.height, z);
+    const cameraPoint = vec3.fromValues(0, 0, 0);
+    // could also go from screenPoint with -z instead of +z, which spans the whole projection.
+    // that'd be like a start/end point instead of a start and a dir.
+
+    // I found that, for model point [-1, -1, 0] (which is the square's bottom left corner)
+    // projectionMatrix * modelViewMatrix * [-1, -1, 0] = expectedScreenPoint (with z = 1)
+
+    const unprojectMatrix = mat4.create();
+    mat4.multiply(unprojectMatrix, projectionMatrix, modelViewMatrix);
+    if (!mat4.invert(unprojectMatrix, unprojectMatrix)) {
+      console.warn('could not invert projectionMatrix * modelViewMatrix!');
+      return;
+    }
+
+    // Create the world point that represents this screen point.
+    // Note that vec3.transformMat4 will do the homogenous divide for us:
+    // https://glmatrix.net/docs/vec3.js.html
+    // Actually this is probably in object coordinates?
+    const worldPoint = vec3.create();
+    vec3.transformMat4(worldPoint, screenPoint, unprojectMatrix);
+
+    // In object coordinates?
+    const worldCameraPoint = vec3.create();
+    vec3.transformMat4(worldCameraPoint, cameraPoint, unprojectMatrix);
+
+    // Maybe the eye is at (0, 0, 0)
+    // and the direction is worldPoint
+    // then we have to intersect with plane z = 0 to get triangles.
+
+    // TODO: Direction is worldPoint - worldCameraPoint, normalized. Not just worldPoint.
+    // TODO: The math is pretty simple, so I should try to do it manually.
+
+    // World-coordinates of a normal to the plane.
+    const norm = vec3.fromValues(0, 1, 0, /*vector*/ 1);
+    vec3.transformMat4(norm, norm, modelViewMatrix);
+    vec3.normalize(norm, norm);
+    // World-coordinates of any point in the plane we are trying to intersect
+    // (0, 0, 0 is in the z = 0 plane).
+    const planePt = vec4.fromValues(0, 0, 0, 1);
+    vec3.transformMat4(planePt, planePt, modelViewMatrix);
+    
+    const t = vec3.dot(vec3.subtract(vec3.create(), planePt, worldCameraPoint), norm) /
+           vec3.dot(worldPoint, norm);
+    if (t <= 0) {
+      console.log('Does not intersect model\'s z plane');
+      return;
+    }
+
+    // Intersection in world coordinates.
+    const intersection = vec3.add(vec3.create(), 
+          vec3.scale(vec3.create(), worldPoint, t), worldCameraPoint);
+    // vec3.transformMat4(intersection, intersection, mat4.invert(mat4.create(), modelViewMatrix));
+    
+    console.log(t, worldPoint, worldCameraPoint, intersection);
+  
   });
 }
 
@@ -161,11 +225,10 @@ function loadShader(gl, type, source) {
 function loadTexture(gl) {
   const texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, texture);
-  gl.generateMipmap(gl.TEXTURE_2D);
   return texture;
 }
 
-function updateTexture(gl, texture, textureCanvas) {
+function updateTexture(gl, texture, textureCanvas, useNearestNeighbor) {
   gl.bindTexture(gl.TEXTURE_2D, texture);
   const level = 0;
   const internalFormat = gl.RGBA;
@@ -176,110 +239,16 @@ function updateTexture(gl, texture, textureCanvas) {
   
   // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   // gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-  const useNearestNeighbor = document.getElementById("nearestNeighbor").checked;
+  
   if (useNearestNeighbor) {
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   } else {
     // TextureCanvas is a power of 2 so we can generate mipmaps.
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   }
 
   return texture;
-}
-
-function initializeTextureCanvas(refreshTextureCallback) {
-  const textureCanvas = document.querySelector("#texturecanvas");
-  const context = textureCanvas.getContext("2d");
-  clearTexture(textureCanvas, refreshTextureCallback);
-
-  let drawing = false;
-
-  const startEventListener = (clientX, clientY) => {
-    const bounds = textureCanvas.getBoundingClientRect();
-    const x = clientX - bounds.left;
-    const y = clientY - bounds.top;
-    drawing = true;
-    context.beginPath();
-    context.moveTo(x - 1, y - 1);
-    context.lineTo(x + 1, y + 1);
-    context.stroke();
-    // https://css-tricks.com/snippets/javascript/random-hex-color/
-    context.strokeStyle = '#' + Math.floor(Math.random()*16777215).toString(16);
-    refreshTextureCallback();
-  };
-  const moveEventListener = (clientX, clientY) => {
-    if (drawing) {
-      const bounds = textureCanvas.getBoundingClientRect();
-      const x = clientX - bounds.left;
-      const y = clientY - bounds.top;
-      context.lineTo(x, y);
-      context.stroke();
-      refreshTextureCallback();
-    }
-  };
-  const upEventListener = () => {
-    drawing = false;
-    refreshTextureCallback();
-  };
-
-  // Set up mouse listeners on the texture canvas.
-  textureCanvas.addEventListener('mousedown', (event) => {
-    startEventListener(event.clientX, event.clientY);
-  });
-  textureCanvas.addEventListener('touchstart', (event) => {
-    event.preventDefault();
-    const x = event.touches[0].clientX;
-    const y = event.touches[0].clientY;
-    startEventListener(x, y);
-  });
-  textureCanvas.addEventListener('mousemove', (event) => {
-    moveEventListener(event.clientX, event.clientY);
-  });
-  textureCanvas.addEventListener('touchmove', (event) => {
-    event.preventDefault();
-    const x = event.touches[0].clientX;
-    const y = event.touches[0].clientY;
-    moveEventListener(x, y);
-  });
-  textureCanvas.addEventListener('mouseup', upEventListener);
-  textureCanvas.addEventListener('touchend', upEventListener);
-
-  // Set up GUI.
-
-  // Set up "clear" button.
-  const clearBtn = document.getElementById("clear");
-  clearBtn.onclick = () => clearTexture(textureCanvas, refreshTextureCallback);
-
-  // Nearest neighbor checkbox.
-  const nearestNeighborBtn = document.getElementById("nearestNeighbor");
-  nearestNeighborBtn.addEventListener("change", () => {
-    refreshTextureCallback();
-  });
-}
-
-/** Resets the texture image to the defaults. */
-function clearTexture(textureCanvas, refreshTextureCallback) {
-  const context = textureCanvas.getContext("2d");
-  const width = textureCanvas.width;
-  const height = textureCanvas.height;
-  context.clearRect(0, 0, width, height);
-  const lineWidth = 2;
-  const numLines = 32;
-  context.lineWidth = lineWidth;
-  context.strokeStyle = "SlateBlue";
-  context.beginPath();
-  for (let i = 0; i <= numLines; i++) {
-    const xStep = width / numLines * i;
-    const yStep = height / numLines * i;
-    context.moveTo(xStep, 0);
-    context.lineTo(xStep, height);
-    context.stroke();
-    context.moveTo(0, yStep);
-    context.lineTo(width, yStep);
-    context.stroke();
-  }
-  refreshTextureCallback();
 }

@@ -1,6 +1,9 @@
 // https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Adding_2D_content_to_a_WebGL_context
 
-function drawScene(gl, programInfo, buffers, texture) {
+let modelViewMatrix = mat4.create();
+let projectionMatrix = mat4.create();
+
+function drawScene(gl, programInfo, buffers, texture, zAxisRotation, scale) {
   gl.clearColor(0.0, 0.0, 0.0, 1.0); // Clear to black, fully opaque
   gl.clearDepth(1.0); // Clear everything
   gl.enable(gl.DEPTH_TEST); // Enable depth testing
@@ -19,9 +22,9 @@ function drawScene(gl, programInfo, buffers, texture) {
 
   const fieldOfView = (45 * Math.PI) / 180; // in radians
   const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-  const zNear = 0.1;
+  const zNear = .1; // Note: Does not invert if zNear == 0.
   const zFar = 100.0;
-  const projectionMatrix = mat4.create();
+  projectionMatrix = mat4.create();
 
   // note: glmatrix.js always has the first argument
   // as the destination to receive the result.
@@ -29,17 +32,19 @@ function drawScene(gl, programInfo, buffers, texture) {
 
   // Set the drawing position to the "identity" point, which is
   // the center of the scene.
-  const modelViewMatrix = mat4.create();
+  modelViewMatrix = mat4.create();
 
   // Now move the drawing position a bit to where we want to
   // start drawing the square.
   mat4.translate(
     modelViewMatrix, // destination matrix
     modelViewMatrix, // matrix to translate
-    [-0.0, .4, -6.0],
-  ); // amount to translate
-  mat4.scale(modelViewMatrix, modelViewMatrix, vec3.fromValues(5, 5, 5));
-  mat4.rotateX(modelViewMatrix, modelViewMatrix, (-80 * Math.PI) / 180);
+    [0, 0, -3],
+    // [-0.0, .5, -6.0], // amount to translate
+  ); 
+  // mat4.scale(modelViewMatrix, modelViewMatrix, vec3.fromValues(5 * scale, 5 * scale, 5 * scale));
+  // mat4.rotateX(modelViewMatrix, modelViewMatrix, (-75 * Math.PI) / 180);
+  // mat4.rotateZ(modelViewMatrix, modelViewMatrix, (zAxisRotation * Math.PI) / 180);
 
   // Tell WebGL how to pull out the positions from the position
   // buffer into the vertexPosition attribute.
@@ -141,4 +146,4 @@ function setTextureAttribute(gl, buffers, programInfo) {
   gl.enableVertexAttribArray(programInfo.attribLocations.textureCoord);
 }
 
-export { drawScene };
+export { drawScene, projectionMatrix, modelViewMatrix };
