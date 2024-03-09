@@ -35,13 +35,13 @@ function initializeTextureCanvas(refreshTextureCallback) {
     const x = clientX - bounds.left;
     const y = clientY - bounds.top;
     drawing = true;
+    // https://css-tricks.com/snippets/javascript/random-hex-color/
+    context.strokeStyle = '#' + Math.floor(Math.random()*16777215).toString(16);
     context.lineWidth = 3;
     context.beginPath();
     context.moveTo(x - 1, y - 1);
     context.lineTo(x + 1, y + 1);
     context.stroke();
-    // https://css-tricks.com/snippets/javascript/random-hex-color/
-    context.strokeStyle = '#' + Math.floor(Math.random()*16777215).toString(16);
     refreshTexture();
   };
   const moveEventListener = (clientX, clientY) => {
@@ -85,7 +85,7 @@ function initializeTextureCanvas(refreshTextureCallback) {
 
   // Set up "clear" button.
   const clearBtn = document.getElementById("clear");
-  clearBtn.onclick = () => clearTexture(textureCanvas, refreshTexture);
+  clearBtn.onclick = () => clearTexture(textureCanvas, refreshTexture, width, height);
 
   // Nearest neighbor checkbox.
   const nearestNeighborBtn = document.getElementById("nearestNeighbor");
@@ -103,14 +103,28 @@ function initializeTextureCanvas(refreshTextureCallback) {
     refreshTexture();
   });
 
-  const textureChangeListener = (u, v) => {
+  // This is used to do drawing when the mouse is moved over the 3D canvas.
+  // It takes the (u,v) coordinate and maps it to the screen,
+  // then draws a pixel / stroke at that point in the texture space.
+  const textureChangeListener = (u, v, isStart) => {
     const bounds = textureCanvas.getBoundingClientRect();
     const x = u * bounds.width;
     const y = v * bounds.height;
-    context.lineTo(x, y);
+
+    if (isStart) {
+      // https://css-tricks.com/snippets/javascript/random-hex-color/
+      context.strokeStyle = '#' + Math.floor(Math.random()*16777215).toString(16);
+      context.lineWidth = 3;
+      context.beginPath();
+      context.moveTo(x - 1, y - 1);
+      context.lineTo(x + 1, y + 1);
+    } else {
+      context.lineTo(x, y);
+    }
     context.stroke();
     refreshTexture();
   };
+  
   return textureChangeListener;
 }
 

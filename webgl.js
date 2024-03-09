@@ -99,10 +99,14 @@ function main() {
     drawScene(gl, programInfo, buffers, texture, rotation, scale);
   });
 
-  canvas.addEventListener("mousemove", (event) => {
+  let drawing = false;
+  const projectCanvasPointToSurface = (clientX, clientY, isStart) => {
+    if (!drawing) {
+      return;
+    }
     const bounds = canvas.getBoundingClientRect();
-    const x = event.clientX - bounds.left;
-    const y = event.clientY - bounds.top;
+    const x = clientX - bounds.left;
+    const y = clientY - bounds.top;
     const z = 1; // clip plane at z
     const screenPoint = vec3.fromValues(2 * x / bounds.width - 1, 1 - 2 * y / bounds.height, z);
     const cameraPoint = vec3.fromValues(0, 0, 0);
@@ -122,25 +126,24 @@ function main() {
     const worldToObject = mat4.create();
     mat4.invert(worldToObject, modelViewMatrix);
 
-    // Create the world point that represents this screen point.
+    // Create the object coordinates point that represents this screen point.
     // Note that vec3.transformMat4 will do the homogenous divide for us:
     // https://glmatrix.net/docs/vec3.js.html
-    // Actually this is probably in object coordinates
     const objectSpaceMousePt = vec3.create();
     vec3.transformMat4(objectSpaceMousePt, screenPoint, unprojectMatrix);
 
-    // In object coordinates?
+    // Create the camera position in object coordinates.
     const objectSpaceCameraPt = vec3.create();
     vec3.transformMat4(objectSpaceCameraPt, cameraPoint, worldToObject);
 
+    // The ray direction is from the camera towards the object space mouse point.
     const rayDir = vec3.create();
     vec3.subtract(rayDir, objectSpaceMousePt, objectSpaceCameraPt);
+    vec3.normalize(rayDir, rayDir);
 
     // Maybe the eye is at (0, 0, 0)
     // and the direction is worldPoint
     // then we have to intersect with plane z = 0 to get triangles.
-
-    // TODO: The math is pretty simple, so I should try to do it manually.
 
     // Object-space coordinates of a normal to the plane (which is in x,y),
     // so the normal is the unit z direction.
@@ -159,13 +162,40 @@ function main() {
 
     // Intersection in object coordinates.
     const intersection = vec3.add(vec3.create(), 
-          vec3.scale(vec3.create(), objectSpaceMousePt, t), objectSpaceCameraPt);
+          vec3.scale(vec3.create(), rayDir, t), objectSpaceCameraPt);
     
     // console.log(t, objectSpaceMousePt, /*objectSpaceCameraPt,*/ rayDir, intersection);
     const u = (intersection[0] + 1) / 2;
     const v = (1 - intersection[1]) / 2;
     // console.log(intersection, u, v);
-    textureChangeListener(u, v);
+    textureChangeListener(u, v, isStart);
+  };
+
+  canvas.addEventListener('mousedown', (event) => {
+    drawing = true;
+    projectCanvasPointToSurface(event.clientX, event.clientY, true);
+  });
+  canvas.addEventListener('touchstart', (event) => {
+    drawing = true;
+    event.preventDefault();
+    const x = event.touches[0].clientX;
+    const y = event.touches[0].clientY;
+    projectCanvasPointToSurface(x, y, true);
+  });
+  canvas.addEventListener('mouseup', (event) => {
+    drawing = false;
+  });
+  canvas.addEventListener('touchend', (event) => {
+    drawing = false;
+  });
+  canvas.addEventListener('mousemove', (event) => {
+    projectCanvasPointToSurface(event.clientX, event.clientY, false);
+  });
+  canvas.addEventListener('touchmove', (event) => {
+    event.preventDefault();
+    const x = event.touches[0].clientX;
+    const y = event.touches[0].clientY;
+    projectCanvasPointToSurface(x, y, false);
   });
 }
 
