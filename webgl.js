@@ -93,7 +93,7 @@ function main() {
   // Flip image pixels into the bottom-to-top order that WebGL expects.
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
-  initializeTextureCanvas((useNearestNeighbor, rotation, scale) => {
+  const textureChangeListener = initializeTextureCanvas((useNearestNeighbor, rotation, scale) => {
     updateTexture(gl, texture, document.querySelector("#texturecanvas"), useNearestNeighbor);
     // Draw the scene
     drawScene(gl, programInfo, buffers, texture, rotation, scale);
@@ -119,47 +119,53 @@ function main() {
       return;
     }
 
+    const worldToObject = mat4.create();
+    mat4.invert(worldToObject, modelViewMatrix);
+
     // Create the world point that represents this screen point.
     // Note that vec3.transformMat4 will do the homogenous divide for us:
     // https://glmatrix.net/docs/vec3.js.html
-    // Actually this is probably in object coordinates?
-    const worldPoint = vec3.create();
-    vec3.transformMat4(worldPoint, screenPoint, unprojectMatrix);
+    // Actually this is probably in object coordinates
+    const objectSpaceMousePt = vec3.create();
+    vec3.transformMat4(objectSpaceMousePt, screenPoint, unprojectMatrix);
 
     // In object coordinates?
-    const worldCameraPoint = vec3.create();
-    vec3.transformMat4(worldCameraPoint, cameraPoint, unprojectMatrix);
+    const objectSpaceCameraPt = vec3.create();
+    vec3.transformMat4(objectSpaceCameraPt, cameraPoint, worldToObject);
+
+    const rayDir = vec3.create();
+    vec3.subtract(rayDir, objectSpaceMousePt, objectSpaceCameraPt);
 
     // Maybe the eye is at (0, 0, 0)
     // and the direction is worldPoint
     // then we have to intersect with plane z = 0 to get triangles.
 
-    // TODO: Direction is worldPoint - worldCameraPoint, normalized. Not just worldPoint.
     // TODO: The math is pretty simple, so I should try to do it manually.
 
-    // World-coordinates of a normal to the plane.
-    const norm = vec3.fromValues(0, 1, 0, /*vector*/ 1);
-    vec3.transformMat4(norm, norm, modelViewMatrix);
-    vec3.normalize(norm, norm);
-    // World-coordinates of any point in the plane we are trying to intersect
-    // (0, 0, 0 is in the z = 0 plane).
-    const planePt = vec4.fromValues(0, 0, 0, 1);
-    vec3.transformMat4(planePt, planePt, modelViewMatrix);
+    // Object-space coordinates of a normal to the plane (which is in x,y),
+    // so the normal is the unit z direction.
+    const norm = vec3.fromValues(0, 0, 1);
+
+    // Object-space coordinates of any point in the plane we are trying to intersect
+    // (0, 0, 0 is in the z = 0 plane), and at the center of the square.
+    const planePt = vec3.fromValues(0, 0, 0);
     
-    const t = vec3.dot(vec3.subtract(vec3.create(), planePt, worldCameraPoint), norm) /
-           vec3.dot(worldPoint, norm);
+    const t = vec3.dot(vec3.subtract(vec3.create(), planePt, objectSpaceCameraPt), norm) /
+           vec3.dot(rayDir, norm);
     if (t <= 0) {
       console.log('Does not intersect model\'s z plane');
       return;
     }
 
-    // Intersection in world coordinates.
+    // Intersection in object coordinates.
     const intersection = vec3.add(vec3.create(), 
-          vec3.scale(vec3.create(), worldPoint, t), worldCameraPoint);
-    // vec3.transformMat4(intersection, intersection, mat4.invert(mat4.create(), modelViewMatrix));
+          vec3.scale(vec3.create(), objectSpaceMousePt, t), objectSpaceCameraPt);
     
-    console.log(t, worldPoint, worldCameraPoint, intersection);
-  
+    // console.log(t, objectSpaceMousePt, /*objectSpaceCameraPt,*/ rayDir, intersection);
+    const u = (intersection[0] + 1) / 2;
+    const v = (1 - intersection[1]) / 2;
+    // console.log(intersection, u, v);
+    textureChangeListener(u, v);
   });
 }
 

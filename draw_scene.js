@@ -39,12 +39,12 @@ function drawScene(gl, programInfo, buffers, texture, zAxisRotation, scale) {
   mat4.translate(
     modelViewMatrix, // destination matrix
     modelViewMatrix, // matrix to translate
-    [0, 0, -3],
-    // [-0.0, .5, -6.0], // amount to translate
+    // [0, 1, -1],
+    [-0.0, .5, -6.0], // amount to translate
   ); 
-  // mat4.scale(modelViewMatrix, modelViewMatrix, vec3.fromValues(5 * scale, 5 * scale, 5 * scale));
-  // mat4.rotateX(modelViewMatrix, modelViewMatrix, (-75 * Math.PI) / 180);
-  // mat4.rotateZ(modelViewMatrix, modelViewMatrix, (zAxisRotation * Math.PI) / 180);
+  mat4.scale(modelViewMatrix, modelViewMatrix, vec3.fromValues(5 * scale, 5 * scale, 5 * scale));
+  mat4.rotateX(modelViewMatrix, modelViewMatrix, (-75 * Math.PI) / 180);
+  mat4.rotateZ(modelViewMatrix, modelViewMatrix, (zAxisRotation * Math.PI) / 180);
 
   // Tell WebGL how to pull out the positions from the position
   // buffer into the vertexPosition attribute.

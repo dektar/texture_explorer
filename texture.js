@@ -102,6 +102,16 @@ function initializeTextureCanvas(refreshTextureCallback) {
   scaleSlider.addEventListener("input", () => {
     refreshTexture();
   });
+
+  const textureChangeListener = (u, v) => {
+    const bounds = textureCanvas.getBoundingClientRect();
+    const x = u * bounds.width;
+    const y = v * bounds.height;
+    context.lineTo(x, y);
+    context.stroke();
+    refreshTexture();
+  };
+  return textureChangeListener;
 }
 
 /** Resets the texture image to the defaults. */
