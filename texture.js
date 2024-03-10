@@ -46,14 +46,12 @@ function initializeTextureCanvas(refreshTextureCallback) {
     refreshTexture();
   };
   const moveEventListener = (clientX, clientY) => {
-    if (drawing) {
-      const bounds = textureCanvas.getBoundingClientRect();
-      const x = clientX - bounds.left;
-      const y = clientY - bounds.top;
-      context.lineTo(x, y);
-      context.stroke();
-      refreshTexture();
-    }
+    const bounds = textureCanvas.getBoundingClientRect();
+    const x = clientX - bounds.left;
+    const y = clientY - bounds.top;
+    context.lineTo(x, y);
+    context.stroke();
+    refreshTexture(); 
   };
   const upEventListener = () => {
     drawing = false;
@@ -65,19 +63,24 @@ function initializeTextureCanvas(refreshTextureCallback) {
     startEventListener(event.clientX, event.clientY);
   });
   textureCanvas.addEventListener('touchstart', (event) => {
-    if (event.touches.length != 1) {
+    if (drawing) {
       return;
     }
-    event.preventDefault();
     const x = event.touches[0].clientX;
     const y = event.touches[0].clientY;
     startEventListener(x, y);
   });
   textureCanvas.addEventListener('mousemove', (event) => {
+    if (!drawing) {
+      return;
+    }
     moveEventListener(event.clientX, event.clientY);
   });
   textureCanvas.addEventListener('touchmove', (event) => {
     if (event.touches.length != 1) {
+      return;
+    }
+    if (!drawing) {
       return;
     }
     event.preventDefault();
@@ -142,6 +145,7 @@ function clearTexture(textureCanvas, refreshTexture, width, height) {
 
   const useGradientBackground = document.getElementById('gradientBackground').checked;
   if (useGradientBackground) {
+    const defaultFillStyle = context.fillStyle;
     let gradient = context.createLinearGradient(0, 0, width, height);
     gradient.addColorStop(0, "rgb(255 0 0 / 75%)");
     gradient.addColorStop(1, "rgb(0 0 255 / 75%)");
@@ -152,14 +156,14 @@ function clearTexture(textureCanvas, refreshTexture, width, height) {
     gradient.addColorStop(1, "rgb(0 255 0 / 75%)");
     context.fillStyle = gradient;
     context.fillRect(0, 0, width, height);
-
+    context.fillStyle = defaultFillStyle;
     context.strokeStyle = "rgb(250 250 250 / 50%)";
   } else {
-    context.strokeStyle = "rgb(200 200 200 / 50%)";
+    context.strokeStyle = "rgb(220 220 220)";
   }
 
   const numLines = width / 8;
-  context.lineWidth = 1;
+  context.lineWidth = 2;
   context.beginPath();
   for (let i = 0; i <= numLines; i++) {
     const xStep = width / numLines * i;

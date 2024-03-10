@@ -19,7 +19,6 @@ function initializeUnprojectListeners(canvas, textureChangeListener) {
       return; // maybe this was an extra touch?
     }
     drawing = true;
-    event.preventDefault();
     const x = event.touches[0].clientX;
     const y = event.touches[0].clientY;
     projectCanvasPointToSurface(x, y, bounds, /*isStart=*/true, 
