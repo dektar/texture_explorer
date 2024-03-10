@@ -1,21 +1,24 @@
 // This array defines each vertex as points in (x, y, z).
 const triangle_vertexes = [
-    -1.0, -1.0, 0.0,
-    -1.0, 1.0, 0.0,
-    1.0, -1.0, 0.0,
-    1.0, 1.0, 0.0,
-    -1.0, -1.0, -2.0, // add a side of the cube.
-    1.0, -1.0, -2.0,
+    -1.0, -1.0, 0.0, // 0
+    -1.0, 1.0, 0.0, // 1
+    1.0, -1.0, 0.0, // 2
+    1.0, 1.0, 0.0, // 3
+    -1.0, -1.0, -2.0, // 4. add a side of the cube.
+    1.0, -1.0, -2.0, // 5
+    -1.0, 1.0, -2.0, // 6
 ];
 
 // This array defines each face as two triangles, using the
 // indices into the vertex array to specify each triangle's
 // position.
 const triangle_indices = [
-  0, 1, 3,
-  0, 3, 2,
+  0, 3, 1,
+  0, 2, 3,
   0, 4, 2,
   4, 5, 2,
+  0, 1, 6,
+  0, 6, 4,
 ];
 
 // The (u,v) texture coordinates of each triangle vertex
@@ -26,6 +29,7 @@ const triangle_textureCoordinates = [
   1.0, 0.0, 
   1.0, 1.0, 
   0.0, 1.0,
+  1.0, 1.0,
   1.0, 1.0,
 ];
 
