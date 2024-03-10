@@ -7,14 +7,6 @@ import {initializeTextureCanvas} from "./texture.js";
 
 main();
 
-/**
- * TODOs
- * gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, textureCanvas);
- *   can pass in pixels
- * load other shapes besides plane
- * 3D coordinates of mouse in webgl canvas: https://stackoverflow.com/questions/60136758/get-3d-coordinates-of-a-mouse-click-in-webgl
- */
-
 //
 // https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/
 //
@@ -178,6 +170,9 @@ function main() {
     projectCanvasPointToSurface(event.clientX, event.clientY, true);
   });
   canvas.addEventListener('touchstart', (event) => {
+    if (drawing) {
+      return; // maybe another touch.
+    }
     drawing = true;
     event.preventDefault();
     const x = event.touches[0].clientX;
@@ -194,6 +189,9 @@ function main() {
     projectCanvasPointToSurface(event.clientX, event.clientY, false);
   });
   canvas.addEventListener('touchmove', (event) => {
+    if (event.touches.length != 1) {
+      return;
+    }
     event.preventDefault();
     const x = event.touches[0].clientX;
     const y = event.touches[0].clientY;

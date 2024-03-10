@@ -10,11 +10,12 @@ function initializeTextureCanvas(refreshTextureCallback) {
   let width = textureCanvas.width;
   let height = textureCanvas.height;
   if (devicePixelRatio !== 1) {
-    textureCanvas.width = width * devicePixelRatio;
-    textureCanvas.height = height * devicePixelRatio;
-    textureCanvas.style.width = width + 'px';
-    textureCanvas.style.height = height + 'px';
-    context.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+    console.log('High density screen, should do something here.');
+    // textureCanvas.width = width * devicePixelRatio;
+    // textureCanvas.height = height * devicePixelRatio;
+    // textureCanvas.style.width = width + 'px';
+    // textureCanvas.style.height = height + 'px';
+    // context.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
   }
   context.imageSmoothingEnabled = false;
 
@@ -64,6 +65,9 @@ function initializeTextureCanvas(refreshTextureCallback) {
     startEventListener(event.clientX, event.clientY);
   });
   textureCanvas.addEventListener('touchstart', (event) => {
+    if (event.touches.length != 1) {
+      return;
+    }
     event.preventDefault();
     const x = event.touches[0].clientX;
     const y = event.touches[0].clientY;
@@ -73,6 +77,9 @@ function initializeTextureCanvas(refreshTextureCallback) {
     moveEventListener(event.clientX, event.clientY);
   });
   textureCanvas.addEventListener('touchmove', (event) => {
+    if (event.touches.length != 1) {
+      return;
+    }
     event.preventDefault();
     const x = event.touches[0].clientX;
     const y = event.touches[0].clientY;

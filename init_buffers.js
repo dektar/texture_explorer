@@ -1,10 +1,12 @@
 function initBuffers(gl) {
   const positionBuffer = initPositionBuffer(gl);
+  const indexBuffer = initIndexBuffer(gl);
   // const colorBuffer = initColorBuffer(gl);
   const textureCoordBuffer = initTextureBuffer(gl);
 
   return {
     position: positionBuffer,
+    indices: indexBuffer,
     // color: colorBuffer,
     textureCoord: textureCoordBuffer,
   };
@@ -20,7 +22,12 @@ function initPositionBuffer(gl) {
 
   // Now create an array of positions for the square.
   // Seems to be (x,y), (x,y), etc.
-  const positions = [1.0, 1.0, -1.0, 1.0, 1.0, -1.0, -1.0, -1.0];
+  const positions = [
+      -1.0, -1.0, 0.0,
+      -1.0, 1.0, 0.0,
+      1.0, -1.0, 0.0,
+      1.0, 1.0, 0.0,
+  ];
 
   // Now pass the list of positions into WebGL to build the
   // shape. We do this by creating a Float32Array from the
@@ -30,11 +37,38 @@ function initPositionBuffer(gl) {
   return positionBuffer;
 }
 
+function initIndexBuffer(gl) {
+  const indexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+
+  // This array defines each face as two triangles, using the
+  // indices into the vertex array to specify each triangle's
+  // position.
+  const indices = [
+    0, 1, 3,
+    0, 3, 2,
+  ];
+
+  gl.bufferData(
+    gl.ELEMENT_ARRAY_BUFFER,
+    new Uint16Array(indices),
+    gl.STATIC_DRAW,
+  );
+
+  return indexBuffer;
+}
+
 function initTextureBuffer(gl) {
   const textureCoordBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
 
-  const textureCoordinates = [1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0];
+  // The (u,v) texture coordinates of each triangle vertex.
+  const textureCoordinates = [
+      0.0, 0.0,
+      0.0, 1.0, 
+      1.0, 0.0, 
+      1.0, 1.0, 
+    ];
 
   // Now pass the list of positions into WebGL to build the
   // shape. We do this by creating a Float32Array from the
@@ -42,22 +76,6 @@ function initTextureBuffer(gl) {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
 
   return textureCoordBuffer;
-}
-
-// https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Using_shaders_to_apply_color_in_WebGL
-function initColorBuffer(gl) {
-  const colors = [
-    1.0, 1.0, 1.0, 1.0, // white
-    1.0, 0.0, 0.0, 1.0, // red
-    0.0, 1.0, 0.0, 1.0, // green
-    0.0, 0.0, 1.0, 1.0, // blue
-  ];
-
-  const colorBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
-
-  return colorBuffer;
 }
 
 export { initBuffers };
