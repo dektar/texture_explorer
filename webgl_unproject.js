@@ -111,31 +111,85 @@ function findUVIntersectionOnObject(rayOrig, rayDir, isStart, drawAtTextureUV) {
   // look up uv coordinates at hit point from triangle_textureCoordinates
   // finally, call drawTextureAtUV
 
-  // Object-space coordinates of a normal to the plane (which is in x,y),
-  // so the normal is the unit z direction.
-  const norm = vec3.fromValues(0, 0, 1);
+  let t = 1000;
+  let u = 0;
+  let v = 0;
+  for (let i = 0; i < triangle_indices.length; i++) {
 
-  // Object-space coordinates of any point in the plane we are trying to intersect
-  // (0, 0, 0 is in the z = 0 plane), and at the center of the square.
-  const planePt = vec3.fromValues(0, 0, 0);
-  
-  // (planePt - rayOrig) * norm / (rayDir * norm)
-  const t = vec3.dot(vec3.subtract(vec3.create(), planePt, rayOrig), norm) /
-         vec3.dot(rayDir, norm);
-  if (t <= 0) {
-    console.log('Does not intersect model\'s z plane');
-    return;
+    // TODO: Could optimize by creating the list of verticies from triangle_vertexes just once.
+    const v0_index = triangle_indices[3 * i];
+    const p0 = vec3.fromValues(triangle_vertexes[3 * v0_index], triangle_vertexes[3 * v0_index + 1], triangle_vertexes[3 * v0_index + 2]);
+    const v1_index = triangle_indices[3 * i + 1];
+    const p1 = vec3.fromValues(triangle_vertexes[3 * v1_index], triangle_vertexes[3 * v1_index + 1], triangle_vertexes[3 * v1_index + 2]);
+    const v2_index = triangle_indices[3 * i + 2];
+    const p2 = vec3.fromValues(triangle_vertexes[3 * v2_index], triangle_vertexes[3 * v2_index + 1], triangle_vertexes[3 * v2_index + 2]);
+    
+    // https://gfxcourses.stanford.edu/cs248a/winter24/lecture/geometricqueries/slide_23
+    const M = mat3.fromValues(
+      p1[0] - p0[0], p1[1] - p0[1], p1[2] - p0[2],
+      p2[0] - p0[0], p2[1] - p0[1], p2[2] - p0[2],
+      -1 * rayDir[0], -1 * rayDir[1], -1 * rayDir[2]
+    );
+    
+    const M_inv = mat3.create();
+    if (!mat3.invert(M_inv, M)) {
+      console.warn('could not invert matrix for ray-triangle intersection');
+      continue;
+    }
+    const u_v_t = vec3.create();
+    vec3.transformMat3(u_v_t, vec3.subtract(vec3.create(), rayOrig, p0), M_inv);
+    if (u_v_t[2] >= t) {
+      // This was a further away hit.
+      continue;
+    }
+    if (u_v_t[0] < 0 || u_v_t[1] < 0 || u_v_t[0] + u_v_t[1] > 1 || u_v_t[2] < 0) {
+      // Not hit.
+      continue;
+    }
+    // This is the best hit we've found so far.
+    t = u_v_t[2];
+
+    // Get uv texture coordinates for the three points.
+    const u0 = triangle_textureCoordinates[2 * v0_index];
+    const v0 = triangle_textureCoordinates[2 * v0_index + 1];
+    const u1 = triangle_textureCoordinates[2 * v1_index];
+    const v1 = triangle_textureCoordinates[2 * v1_index + 1];
+    const u2 = triangle_textureCoordinates[2 * v2_index];
+    const v2 = triangle_textureCoordinates[2 * v2_index + 1];
+
+    // Interpolate the (u,v) on the texture for this u / v on the triangle.
+    u = u0 * (1 - u_v_t[0] - u_v_t[1]) + u1 * u_v_t[0] + u2 * u_v_t[1];
+    v = v0 * (1 - u_v_t[0] - u_v_t[1]) + v1 * u_v_t[0] + v2 * u_v_t[1];
+
+    console.log(u_v_t);
   }
 
-  // Intersection in object coordinates.
-  const intersection = vec3.add(vec3.create(), 
-        vec3.scale(vec3.create(), rayDir, t), rayOrig);
+  // // Object-space coordinates of a normal to the plane (which is in x,y),
+  // // so the normal is the unit z direction.
+  // const norm = vec3.fromValues(0, 0, 1);
+
+  // // Object-space coordinates of any point in the plane we are trying to intersect
+  // // (0, 0, 0 is in the z = 0 plane), and at the center of the square.
+  // const planePt = vec3.fromValues(0, 0, 0);
   
-  // console.log(t, objectSpaceMousePt, /*rayOrig,*/ rayDir, intersection);
-  const u = (intersection[0] + 1) / 2;
-  const v = (1 - intersection[1]) / 2;
+  // // (planePt - rayOrig) * norm / (rayDir * norm)
+  // const t = vec3.dot(vec3.subtract(vec3.create(), planePt, rayOrig), norm) /
+  //        vec3.dot(rayDir, norm);
+  // if (t <= 0) {
+  //   console.log('Does not intersect model\'s z plane');
+  //   return;
+  // }
+
+  // // Intersection in object coordinates.
+  // const intersection = vec3.add(vec3.create(), 
+  //       vec3.scale(vec3.create(), rayDir, t), rayOrig);
+  
+  // // console.log(t, objectSpaceMousePt, /*rayOrig,*/ rayDir, intersection);
+  // u = (intersection[0] + 1) / 2;
+  // v = (1 - intersection[1]) / 2;
+  // console.log(u, v, t);
   // console.log(intersection, u, v);
-  drawAtTextureUV(u, v, isStart);
+  drawAtTextureUV(u, 1 - v, isStart);
 }
 
 

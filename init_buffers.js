@@ -4,8 +4,8 @@ const triangle_vertexes = [
     -1.0, 1.0, 0.0,
     1.0, -1.0, 0.0,
     1.0, 1.0, 0.0,
-    // -1.0, -1.0, -2.0, // add a side of the cube.
-    // 1.0, -1.0, -2.0,
+    -1.0, -1.0, -2.0, // add a side of the cube.
+    1.0, -1.0, -2.0,
 ];
 
 // This array defines each face as two triangles, using the
@@ -14,8 +14,8 @@ const triangle_vertexes = [
 const triangle_indices = [
   0, 1, 3,
   0, 3, 2,
-  // 0, 4, 2,
-  // 4, 5, 2,
+  0, 4, 2,
+  4, 5, 2,
 ];
 
 // The (u,v) texture coordinates of each triangle vertex
@@ -25,8 +25,8 @@ const triangle_textureCoordinates = [
   0.0, 1.0, 
   1.0, 0.0, 
   1.0, 1.0, 
-  // 0.0, 1.0,
-  // 1.0, 1.0,
+  0.0, 1.0,
+  1.0, 1.0,
 ];
 
 function initBuffers(gl) {
