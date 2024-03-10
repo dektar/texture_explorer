@@ -1,18 +1,19 @@
 import { modelViewMatrix, projectionMatrix } from "./draw_scene.js";
+import { triangle_indices, triangle_vertexes, triangle_textureCoordinates } from "./init_buffers.js"
 
 /**
  * Initializes pointer listeners on the webgl canvas that will project
  * screen points into 3D object space, perform an intersection test with
- * the object, and call the textureChangeListener to draw any updates.
+ * the object, and call the drawAtTextureUV to draw any updates.
  */
-function initializeUnprojectListeners(canvas, textureChangeListener) {
+function initializeUnprojectListeners(canvas, drawAtTextureUV) {
   let drawing = false;
   const bounds = canvas.getBoundingClientRect();
 
   canvas.addEventListener('mousedown', (event) => {
     drawing = true;
     projectCanvasPointToSurface(event.clientX, event.clientY, bounds, 
-        /*isStart=*/true, textureChangeListener);
+        /*isStart=*/true, drawAtTextureUV);
   });
   canvas.addEventListener('touchstart', (event) => {
     if (drawing) {
@@ -22,7 +23,7 @@ function initializeUnprojectListeners(canvas, textureChangeListener) {
     const x = event.touches[0].clientX;
     const y = event.touches[0].clientY;
     projectCanvasPointToSurface(x, y, bounds, /*isStart=*/true, 
-        textureChangeListener);
+        drawAtTextureUV);
   });
   canvas.addEventListener('mouseup', (event) => {
     drawing = false;
@@ -35,7 +36,7 @@ function initializeUnprojectListeners(canvas, textureChangeListener) {
       return;
     }
     projectCanvasPointToSurface(event.clientX, event.clientY, bounds, 
-        false, textureChangeListener);
+        false, drawAtTextureUV);
   });
   canvas.addEventListener('touchmove', (event) => {
     if (event.touches.length != 1) {
@@ -47,7 +48,7 @@ function initializeUnprojectListeners(canvas, textureChangeListener) {
     event.preventDefault();
     const x = event.touches[0].clientX;
     const y = event.touches[0].clientY;
-    projectCanvasPointToSurface(x, y, bounds, false, textureChangeListener);
+    projectCanvasPointToSurface(x, y, bounds, false, drawAtTextureUV);
   });
 }
 
@@ -55,7 +56,7 @@ function initializeUnprojectListeners(canvas, textureChangeListener) {
  * Provate helper that actually does the unprojection.
  */
 function projectCanvasPointToSurface(clientX, clientY, bounds, 
-    isStart, textureChangeListener) {
+    isStart, drawAtTextureUV) {
   const x = clientX - bounds.left;
   const y = clientY - bounds.top;
   const z = 1; // clip plane at z = 1 (think of the perspective diagram).
@@ -94,6 +95,22 @@ function projectCanvasPointToSurface(clientX, clientY, bounds,
   vec3.subtract(rayDir, objectSpaceMousePt, objectSpaceCameraPt);
   vec3.normalize(rayDir, rayDir);
 
+  findUVIntersectionOnObject(objectSpaceCameraPt, rayDir, isStart, drawAtTextureUV);
+}
+
+/**
+ * Intersects the ray with origin `rayOrig` and direction `rayDir` with the
+ * geometry, and informs the drawAtTextureUV if an intersection was found.
+ */
+function findUVIntersectionOnObject(rayOrig, rayDir, isStart, drawAtTextureUV) {
+  // TODO: For each triangle (each set of 3 triangle_indices),
+  // calculate the normal
+  // get the plane point (one of them)
+  // do the parametric thing from https://gfxcourses.stanford.edu/cs248a/winter24/lecture/geometricqueries/slide_23
+  // determine if t is less than it was and if so it's a hit
+  // look up uv coordinates at hit point from triangle_textureCoordinates
+  // finally, call drawTextureAtUV
+
   // Object-space coordinates of a normal to the plane (which is in x,y),
   // so the normal is the unit z direction.
   const norm = vec3.fromValues(0, 0, 1);
@@ -102,8 +119,8 @@ function projectCanvasPointToSurface(clientX, clientY, bounds,
   // (0, 0, 0 is in the z = 0 plane), and at the center of the square.
   const planePt = vec3.fromValues(0, 0, 0);
   
-  // (planePt - objectSpaceCameraPt) * norm / (rayDir * norm)
-  const t = vec3.dot(vec3.subtract(vec3.create(), planePt, objectSpaceCameraPt), norm) /
+  // (planePt - rayOrig) * norm / (rayDir * norm)
+  const t = vec3.dot(vec3.subtract(vec3.create(), planePt, rayOrig), norm) /
          vec3.dot(rayDir, norm);
   if (t <= 0) {
     console.log('Does not intersect model\'s z plane');
@@ -112,13 +129,13 @@ function projectCanvasPointToSurface(clientX, clientY, bounds,
 
   // Intersection in object coordinates.
   const intersection = vec3.add(vec3.create(), 
-        vec3.scale(vec3.create(), rayDir, t), objectSpaceCameraPt);
+        vec3.scale(vec3.create(), rayDir, t), rayOrig);
   
-  // console.log(t, objectSpaceMousePt, /*objectSpaceCameraPt,*/ rayDir, intersection);
+  // console.log(t, objectSpaceMousePt, /*rayOrig,*/ rayDir, intersection);
   const u = (intersection[0] + 1) / 2;
   const v = (1 - intersection[1]) / 2;
   // console.log(intersection, u, v);
-  textureChangeListener(u, v, isStart);
+  drawAtTextureUV(u, v, isStart);
 }
 
 

@@ -86,13 +86,13 @@ function main() {
   // Flip image pixels into the bottom-to-top order that WebGL expects.
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
-  const textureChangeListener = initializeTextureCanvas((useNearestNeighbor, rotation, scale) => {
+  const drawAtTextureUV = initializeTextureCanvas((useNearestNeighbor, rotation, scale) => {
     updateTexture(gl, texture, document.querySelector("#texturecanvas"), useNearestNeighbor);
     // Draw the scene
     drawScene(gl, programInfo, buffers, texture, rotation, scale);
   });
 
-  initializeUnprojectListeners(canvas, textureChangeListener);
+  initializeUnprojectListeners(canvas, drawAtTextureUV);
 }
 
 //

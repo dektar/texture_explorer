@@ -116,7 +116,7 @@ function initializeTextureCanvas(refreshTextureCallback) {
   // This is used to do drawing when the mouse is moved over the 3D canvas.
   // It takes the (u,v) coordinate and maps it to the screen,
   // then draws a pixel / stroke at that point in the texture space.
-  const textureChangeListener = (u, v, isStart) => {
+  const drawAtTextureUV = (u, v, isStart) => {
     const bounds = textureCanvas.getBoundingClientRect();
     const x = u * bounds.width;
     const y = v * bounds.height;
@@ -135,7 +135,7 @@ function initializeTextureCanvas(refreshTextureCallback) {
     refreshTexture();
   };
 
-  return textureChangeListener;
+  return drawAtTextureUV;
 }
 
 /** Resets the texture image to the defaults. */

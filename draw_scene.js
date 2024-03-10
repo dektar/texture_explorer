@@ -1,3 +1,5 @@
+import { triangle_indices } from "./init_buffers.js"
+
 // https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Adding_2D_content_to_a_WebGL_context
 
 let modelViewMatrix = mat4.create();
@@ -39,7 +41,6 @@ function drawScene(gl, programInfo, buffers, texture, zAxisRotation, scale) {
   mat4.translate(
     modelViewMatrix, // destination matrix
     modelViewMatrix, // matrix to translate
-    // [0, 1, -1],
     [-0.0, .5, -6.0], // amount to translate
   ); 
   mat4.scale(modelViewMatrix, modelViewMatrix, vec3.fromValues(5 * scale, 5 * scale, 5 * scale));
@@ -83,7 +84,7 @@ function drawScene(gl, programInfo, buffers, texture, zAxisRotation, scale) {
   gl.uniform1i(programInfo.uniformLocations.uSampler, 0);
 
   {
-    const vertexCount = 6;  // Double-counting!
+    const vertexCount = triangle_indices.length;
     const type = gl.UNSIGNED_SHORT;
     const offset = 0;
     gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
@@ -109,26 +110,6 @@ function setPositionAttribute(gl, buffers, programInfo) {
     offset,
   );
   gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
-}
-
-// Tell WebGL how to pull out the colors from the color buffer
-// into the vertexColor attribute.
-function setColorAttribute(gl, buffers, programInfo) {
-  const numComponents = 4;
-  const type = gl.FLOAT;
-  const normalize = false;
-  const stride = 0;
-  const offset = 0;
-  gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color);
-  gl.vertexAttribPointer(
-    programInfo.attribLocations.vertexColor,
-    numComponents,
-    type,
-    normalize,
-    stride,
-    offset,
-  );
-  gl.enableVertexAttribArray(programInfo.attribLocations.vertexColor);
 }
 
 // tell webgl how to pull out the texture coordinates from buffer
