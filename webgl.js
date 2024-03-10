@@ -107,14 +107,12 @@ function main() {
     const bounds = canvas.getBoundingClientRect();
     const x = clientX - bounds.left;
     const y = clientY - bounds.top;
-    const z = 1; // clip plane at z
+    const z = 1; // clip plane at z = 1 (think of the perspective diagram).
     const screenPoint = vec3.fromValues(2 * x / bounds.width - 1, 1 - 2 * y / bounds.height, z);
     const cameraPoint = vec3.fromValues(0, 0, 0);
-    // could also go from screenPoint with -z instead of +z, which spans the whole projection.
-    // that'd be like a start/end point instead of a start and a dir.
-
     // I found that, for model point [-1, -1, 0] (which is the square's bottom left corner)
-    // projectionMatrix * modelViewMatrix * [-1, -1, 0] = expectedScreenPoint (with z = 1)
+    // projectionMatrix * modelViewMatrix * [-1, -1, 0] = expectedScreenPoint (with z = 1).
+    // Now we just have to invert that!
 
     const unprojectMatrix = mat4.create();
     mat4.multiply(unprojectMatrix, projectionMatrix, modelViewMatrix);
@@ -124,7 +122,10 @@ function main() {
     }
 
     const worldToObject = mat4.create();
-    mat4.invert(worldToObject, modelViewMatrix);
+    if (!mat4.invert(worldToObject, modelViewMatrix)) {
+      console.warn('could not invert the modelViewMatrix!');
+      return;
+    }
 
     // Create the object coordinates point that represents this screen point.
     // Note that vec3.transformMat4 will do the homogenous divide for us:
@@ -153,6 +154,7 @@ function main() {
     // (0, 0, 0 is in the z = 0 plane), and at the center of the square.
     const planePt = vec3.fromValues(0, 0, 0);
     
+    // (planePt - objectSpaceCameraPt) * norm / (rayDir * norm)
     const t = vec3.dot(vec3.subtract(vec3.create(), planePt, objectSpaceCameraPt), norm) /
            vec3.dot(rayDir, norm);
     if (t <= 0) {

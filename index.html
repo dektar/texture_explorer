@@ -15,15 +15,22 @@
     <canvas id="glcanvas" width="640" height="480"></canvas>
     <canvas id="texturecanvas" width="512" height="512" style="image-rendering: pixelated;"></canvas>
     <br/>
-    <input type="button" value="clear" id="clear"></input>
-    <br/>
+    <h3>Texture mapping</h3>
     <input type="checkbox" value="nearest neighbor" id="nearestNeighbor" checked/>
     <label for="nearestNeighbor">Nearest neighbor</label>
     <br/>
+    <h3>Object transformation</h3>
     <input type="range" min="0" max="359" value="25" id="rotation"/>
     <label for="rotation">Z axis rotation</label>
     <br/>
     <input type="range" min="20" max="200" value="100" id="scale"/>
     <label for="scale">Object scale</label>
+    <h3>Start over</h3>
+    <input type="button" value="clear" id="clear"></input>
+    <br/>
+    <input type="checkbox" value="gradient background" id="gradientBackground" checked/>
+    <label for="gradientBackground">Start with gradient background</label>
+    <br/>
+
 </body>
 </html>
