@@ -19,12 +19,18 @@
     <input type="checkbox" value="nearest neighbor" id="nearestNeighbor" checked/>
     <label for="nearestNeighbor">Nearest neighbor</label>
     <br/>
-    <h3>Object transformation</h3>
-    <input type="range" min="0" max="359" value="25" id="rotation"/>
-    <label for="rotation">Z axis rotation</label>
+    <h3>Object</h3>
+    <label for="modelType">Model type</label>
+    <select id="modelType" name="modelType">
+      <option value="square">Square</option>
+      <option value="cube">Cube</option>
+    </select>
     <br/>
-    <input type="range" min="20" max="200" value="100" id="scale"/>
+    <label for="rotation">Z axis rotation</label>
+    <input type="range" min="0" max="359" value="25" id="rotation"/>
+    <br/>
     <label for="scale">Object scale</label>
+    <input type="range" min="20" max="200" value="100" id="scale"/>
     <h3>Start over</h3>
     <input type="button" value="clear" id="clear"></input>
     <br/>

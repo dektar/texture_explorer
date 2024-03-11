@@ -1,5 +1,5 @@
 import { modelViewMatrix, projectionMatrix } from "./draw_scene.js";
-import { triangle_indices, triangle_vertexes, triangle_textureCoordinates } from "./init_buffers.js"
+import { triangle_indices, triangle_vertices, triangle_textureCoordinates } from "./init_buffers.js"
 
 /**
  * Initializes pointer listeners on the webgl canvas that will project
@@ -107,13 +107,19 @@ function findUVIntersectionOnObject(rayOrig, rayDir, isStart, drawAtTextureUV) {
   let u = 0;
   let v = 0;
   for (let i = 0; i < triangle_indices.length; i++) {
-    // TODO: Could optimize by creating the list of verticies from triangle_vertexes just once.
+    // TODO: Could optimize by creating the list of verticies from triangle_vertices just once.
     const v0_index = triangle_indices[3 * i];
-    const p0 = vec3.fromValues(triangle_vertexes[3 * v0_index], triangle_vertexes[3 * v0_index + 1], triangle_vertexes[3 * v0_index + 2]);
+    const p0 = vec3.fromValues(triangle_vertices[3 * v0_index], 
+        triangle_vertices[3 * v0_index + 1], 
+        triangle_vertices[3 * v0_index + 2]);
     const v1_index = triangle_indices[3 * i + 1];
-    const p1 = vec3.fromValues(triangle_vertexes[3 * v1_index], triangle_vertexes[3 * v1_index + 1], triangle_vertexes[3 * v1_index + 2]);
+    const p1 = vec3.fromValues(triangle_vertices[3 * v1_index], 
+        triangle_vertices[3 * v1_index + 1], 
+        triangle_vertices[3 * v1_index + 2]);
     const v2_index = triangle_indices[3 * i + 2];
-    const p2 = vec3.fromValues(triangle_vertexes[3 * v2_index], triangle_vertexes[3 * v2_index + 1], triangle_vertexes[3 * v2_index + 2]);
+    const p2 = vec3.fromValues(triangle_vertices[3 * v2_index], 
+        triangle_vertices[3 * v2_index + 1], 
+        triangle_vertices[3 * v2_index + 2]);
     
     // https://gfxcourses.stanford.edu/cs248a/winter24/lecture/geometricqueries/slide_23
     const M = mat3.fromValues(
@@ -152,6 +158,7 @@ function findUVIntersectionOnObject(rayOrig, rayDir, isStart, drawAtTextureUV) {
     u = u0 * (1 - u_v_t[0] - u_v_t[1]) + u1 * u_v_t[0] + u2 * u_v_t[1];
 
     // Why is this 1-v? Oh well!
+    // Perhaps gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); ?
     v = 1 - (v0 * (1 - u_v_t[0] - u_v_t[1]) + v1 * u_v_t[0] + v2 * u_v_t[1]);
   }
   if (t > 100) {

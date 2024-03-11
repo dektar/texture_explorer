@@ -77,18 +77,25 @@ function main() {
     },
   };
 
-  // Here's where we call the routine that builds all the
-  // objects we'll be drawing.
-  const buffers = initBuffers(gl);
-
   // Load the texture from the texture canvas.
   const texture = loadTexture(gl);
   // Flip image pixels into the bottom-to-top order that WebGL expects.
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
+  // Here's where we call the routine that builds all the
+  // objects we'll be drawing.
+  const modelTypeSelect = document.getElementById('modelType');
+  let buffers = initBuffers(gl, modelTypeSelect.value);
+  modelTypeSelect.addEventListener("change", (event) => {
+    buffers = initBuffers(gl, modelTypeSelect.value);
+    drawScene(gl, programInfo, buffers, texture, 
+        document.getElementById("rotation").value, 
+        document.getElementById("scale").value / 100.);
+  });
+
   const drawAtTextureUV = initializeTextureCanvas((useNearestNeighbor, rotation, scale) => {
     updateTexture(gl, texture, document.querySelector("#texturecanvas"), useNearestNeighbor);
-    // Draw the scene
+    // Draw the scene.
     drawScene(gl, programInfo, buffers, texture, rotation, scale);
   });
 
