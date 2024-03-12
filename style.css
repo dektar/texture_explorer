@@ -2,14 +2,37 @@ body {
   font-family: 'Courier New', Courier, monospace;
 }
 
+input {
+  font-family: 'Courier New', Courier, monospace;
+}
+
+select {
+  font-family: 'Courier New', Courier, monospace;
+}
+
 p {
   margin-left: 1em;
   margin-right: 1em;
 }
 
-h1, h2 {
+h1 {
   margin-left: .5em;
   margin-right: .5em;
+}
+
+h2 {
+  margin-left: .75em;
+  margin-right: .5em;
+}
+
+h3 {
+  margin-left: 1em;
+  margin-right: 1em;
+}
+
+ol {
+  margin-left: 1em;
+  margin-right: 1em;
 }
 
 fieldset {
