@@ -12,6 +12,9 @@ main();
 // https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/
 //
 function main() {
+  console.log('***\n*** Note: Touch points are offset when devtools is open.\n' +
+  '*** Consider opening it in a new window via chrome://inspect.\n***');
+  
   const canvas = document.querySelector("#glcanvas");
   // Initialize the GL context
   const gl = canvas.getContext("webgl");

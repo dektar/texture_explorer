@@ -8,11 +8,11 @@ import { triangle_indices, triangle_vertices, triangle_textureCoordinates } from
  */
 function initializeUnprojectListeners(canvas, drawAtTextureUV) {
   let drawing = false;
-  const bounds = canvas.getBoundingClientRect();
 
   canvas.addEventListener('mousedown', (event) => {
     drawing = true;
-    projectCanvasPointToSurface(event.clientX, event.clientY, bounds, 
+    projectCanvasPointToSurface(event.clientX, event.clientY, 
+        canvas.getBoundingClientRect(), 
         /*isStart=*/true, drawAtTextureUV);
   });
   canvas.addEventListener('touchstart', (event) => {
@@ -22,8 +22,8 @@ function initializeUnprojectListeners(canvas, drawAtTextureUV) {
     drawing = true;
     const x = event.touches[0].clientX;
     const y = event.touches[0].clientY;
-    projectCanvasPointToSurface(x, y, bounds, /*isStart=*/true, 
-        drawAtTextureUV);
+    projectCanvasPointToSurface(x, y, canvas.getBoundingClientRect(),
+        /*isStart=*/true, drawAtTextureUV);
   });
   canvas.addEventListener('mouseup', (event) => {
     drawing = false;
@@ -35,8 +35,8 @@ function initializeUnprojectListeners(canvas, drawAtTextureUV) {
     if (!drawing) {
       return;
     }
-    projectCanvasPointToSurface(event.clientX, event.clientY, bounds, 
-        false, drawAtTextureUV);
+    projectCanvasPointToSurface(event.clientX, event.clientY, 
+        canvas.getBoundingClientRect(), false, drawAtTextureUV);
   });
   canvas.addEventListener('touchmove', (event) => {
     if (event.touches.length != 1) {
@@ -48,7 +48,7 @@ function initializeUnprojectListeners(canvas, drawAtTextureUV) {
     event.preventDefault();
     const x = event.touches[0].clientX;
     const y = event.touches[0].clientY;
-    projectCanvasPointToSurface(x, y, bounds, false, drawAtTextureUV);
+    projectCanvasPointToSurface(x, y, canvas.getBoundingClientRect(), false, drawAtTextureUV);
   });
 }
 
@@ -130,7 +130,7 @@ function findUVIntersectionOnObject(rayOrig, rayDir, isStart, drawAtTextureUV) {
     
     const M_inv = mat3.create();
     if (!mat3.invert(M_inv, M)) {
-      console.warn('could not invert matrix for ray-triangle intersection');
+      // console.warn('could not invert matrix for ray-triangle intersection');
       continue;
     }
     const u_v_t = vec3.create();

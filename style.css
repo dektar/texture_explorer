@@ -1,0 +1,40 @@
+body {
+  font-family: 'Courier New', Courier, monospace;
+}
+
+p {
+  margin-left: 1em;
+  margin-right: 1em;
+}
+
+h1, h2 {
+  margin-left: .5em;
+  margin-right: .5em;
+}
+
+fieldset {
+  width: fit-content;
+  display: inline-block;
+  vertical-align: top;
+  margin: 1em;
+}
+
+canvas {
+  outline:4px solid #aaa;
+  margin: 1em;
+}
+
+#glcanvas {
+  width:640px; 
+  height:480px;
+}
+
+#texturecanvas {
+  width:512px; 
+  height:512px; 
+  image-rendering: pixelated;
+}
+
+.challenge {
+  color:darkred;
+}

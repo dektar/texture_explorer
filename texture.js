@@ -10,7 +10,7 @@ function initializeTextureCanvas(refreshTextureCallback) {
   let width = textureCanvas.width;
   let height = textureCanvas.height;
   if (devicePixelRatio !== 1) {
-    console.log('High density screen, should do something here.');
+    console.log('You have a high-density screen, I should do something here, which might also make browser zoom work properly.');
     // textureCanvas.width = width * devicePixelRatio;
     // textureCanvas.height = height * devicePixelRatio;
     // textureCanvas.style.width = width + 'px';
@@ -143,8 +143,29 @@ function clearTexture(textureCanvas, refreshTexture, width, height) {
   const context = textureCanvas.getContext("2d");
   context.clearRect(0, 0, width, height);
 
-  const useGradientBackground = document.getElementById('gradientBackground').checked;
-  if (useGradientBackground) {
+  const baseTextureType = document.getElementById('baseTextureType').value;
+  if (baseTextureType === 'grey') {
+    context.fillStyle = 'rgb(220 220 220)';
+    context.fillRect(0, 0, width, height);
+    refreshTexture();
+    return;
+  }
+  if (baseTextureType === 'cat') {
+    const image = new Image();
+    image.onload = () => {
+      context.drawImage(image, 0, 0);
+      refreshTexture();
+    }
+    image.src = 'cat.png';
+    return;
+  }
+  let numLines = width / 8;
+  context.lineWidth = 2;
+  if (baseTextureType === "uv_grid") {
+    numLines = width / 32;
+    context.lineWidth = 4;
+    context.strokeStyle = "rgb(150 150 150)";
+  } else if (baseTextureType === 'gradient') {
     const defaultFillStyle = context.fillStyle;
     let gradient = context.createLinearGradient(0, 0, width, height);
     gradient.addColorStop(0, "rgb(255 0 0 / 75%)");
@@ -157,22 +178,34 @@ function clearTexture(textureCanvas, refreshTexture, width, height) {
     context.fillStyle = gradient;
     context.fillRect(0, 0, width, height);
     context.fillStyle = defaultFillStyle;
-    context.strokeStyle = "rgb(250 250 250 / 50%)";
-  } else {
+    context.strokeStyle = "rgb(250 250 250 / 42%)";
+  } else if (baseTextureType === "grid") {
     context.strokeStyle = "rgb(220 220 220)";
   }
 
-  const numLines = width / 8;
-  context.lineWidth = 2;
   context.beginPath();
   for (let i = 0; i <= numLines; i++) {
     const xStep = width / numLines * i;
     const yStep = height / numLines * i;
     context.moveTo(xStep, 0);
     context.lineTo(xStep, height);
-    context.stroke();
     context.moveTo(0, yStep);
     context.lineTo(width, yStep);
+  }
+  context.stroke();
+
+  if (baseTextureType == 'uv_grid') {
+    context.strokeStyle = "rgb(0 0 0)";
+    context.lineWidth = 8;
+    context.font = '64px sans-serif';
+    context.textAlign = 'right';
+    context.fillText('u', width - 12, height - 32);
+    context.textAlign = 'left';
+    context.fillText('v', 24, 64);
+    context.beginPath();
+    context.moveTo(12, 12);
+    context.lineTo(12, height - 12);
+    context.lineTo(width - 12, height - 12);
     context.stroke();
   }
   refreshTexture();

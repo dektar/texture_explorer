@@ -9,34 +9,73 @@
       crossorigin="anonymous"
       defer></script>
       <script src="./webgl.js" type="module"></script>
+      <link rel="stylesheet" type="text/css" href="style.css">
   </head>
-
   <body>
-    <canvas id="glcanvas" width="640" height="480"></canvas>
-    <canvas id="texturecanvas" width="512" height="512" style="image-rendering: pixelated;"></canvas>
+    <h1>Texture mapping explorer</h1>
+    <p>Katie Dektar / CS248A final project 2024</p>
+    <p>Interactively visualize how a 2D texture map can be wrapped over geometry and projected into screen space.</p>
+    <h2>Warp speed</h2>
+    <p>
+      Below are two images. The first is is a 3D rendering of a textured model, and
+      the second is a 2D visualization of texture space. You can see how the texture is warped
+      in the first compared to the second during the transformations that take it from object space
+      to screen space.
+    </p>
+    <h2>Draw your own!</h2>
+    <p>
+      Click or tap and drag to draw on the 2D or 3D model see your drawings reflected into both the 
+      texture and the textured geometry. Note how different your drawings look in 2D or 3D! If you
+      draw a recognizable shape on one side it may get all warped on the other side.
+      <span class="challenge"><b>Challenge</b>: Can you draw a shape on the flat texture (second image)
+        that looks square on the 3D plane (first)?</span> To start over, <i>clear</i> your drawing
+        with the controls below.
+    </p>
+    <p></p>
+    <p>
+      Use the controls to modify position, size, or type of object, the texture mapping
+      interpolation method, or to reset the texture map to different defaults.
+      <span class="challenge"><b>Try it</b>: Change the model to the cube. Can you figure out which
+        parts of the texture are mapped to which cube face?</span>
+    </p>
+    <canvas id="glcanvas" width="640" height="480" alt="3D rendering of an object covered with the texture from the 2D image."></canvas>
+    <canvas id="texturecanvas" width="512" height="512" alt="2D image which is used to texture the 3D object."></canvas>
     <br/>
-    <h3>Texture mapping</h3>
-    <input type="checkbox" value="nearest neighbor" id="nearestNeighbor" checked/>
-    <label for="nearestNeighbor">Nearest neighbor</label>
-    <br/>
-    <h3>Object</h3>
-    <label for="modelType">Model type</label>
-    <select id="modelType" name="modelType">
-      <option value="square">Square</option>
-      <option value="cube">Cube</option>
-    </select>
-    <br/>
-    <label for="rotation">Z axis rotation</label>
-    <input type="range" min="0" max="359" value="25" id="rotation"/>
-    <br/>
-    <label for="scale">Object scale</label>
-    <input type="range" min="20" max="200" value="100" id="scale"/>
-    <h3>Start over</h3>
-    <input type="button" value="clear" id="clear"></input>
-    <br/>
-    <input type="checkbox" value="gradient background" id="gradientBackground" checked/>
-    <label for="gradientBackground">Start with gradient background</label>
-    <br/>
-
-</body>
+    <fieldset>
+      <legend>Texture mapping</legend>
+      <input type="checkbox" value="nearest neighbor" id="nearestNeighbor" checked/>
+      <label for="nearestNeighbor">Nearest neighbor</label>
+    </fieldset>
+    <fieldset>
+      <legend>Object</legend>
+      <label for="modelType">Model type</label>
+      <select id="modelType" name="modelType">
+        <option value="square">Square</option>
+        <option value="cube">Cube</option>
+      </select>
+      <br/>
+      <label for="rotation">Rotation</label>
+      <input type="range" min="0" max="359" value="30" id="rotation"/>
+      <br/>
+      <label for="scale">Object scale</label>
+      <input type="range" min="20" max="200" value="100" id="scale"/>
+    </fieldset>
+    <fieldset>
+      <legend>Starting texture</legend>
+      <label for="baseTextureType">Starting texture</label>
+      <select name="baseTextureType" id="baseTextureType">
+        <option value="gradient">Gradient</option>
+        <option value="grid">Simple grid</option>
+        <option value="uv_grid">UV grid</option>
+        <option value="grey">Grey</option>
+        <option value="cat">Cat</option>
+      </select>
+      <br/>
+      <input type="button" value="clear" id="clear"></input>
+    </fieldset>
+  <h2>How does the demo work?</h2>
+  <h3>
+    
+  </h3>
+  </body>
 </html>
