@@ -1,13 +1,17 @@
 body {
   font-family: 'Courier New', Courier, monospace;
+  font-size: 1em;
 }
 
 input {
   font-family: 'Courier New', Courier, monospace;
+  font-size:1em;
+  margin-top: 1em;
 }
 
 select {
   font-family: 'Courier New', Courier, monospace;
+  font-size:1em;
 }
 
 p {
@@ -31,8 +35,8 @@ h3 {
 }
 
 ol {
-  margin-left: 1em;
-  margin-right: 1em;
+  margin-left: 2em;
+  margin-right: 2em;
 }
 
 fieldset {
@@ -40,6 +44,7 @@ fieldset {
   display: inline-block;
   vertical-align: top;
   margin: 1em;
+  font-size: 1.5em;
 }
 
 canvas {

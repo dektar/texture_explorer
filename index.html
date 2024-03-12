@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=640, initial-scale=1.0">
     <title>WebGL Demo</title>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"
@@ -22,30 +23,9 @@
       in the first compared to the second during the transformations that take it from object space
       to screen space.
     </p>
-    <h2>Draw your own!</h2>
-    <p>
-      Click or tap and drag to draw on the 2D or 3D model see your drawings reflected into both the 
-      texture and the textured geometry. Note how different your drawings look in 2D or 3D! If you
-      draw a recognizable shape on one side it may get all warped on the other side.
-      <span class="challenge"><b>Challenge</b>: Can you draw a shape on the flat texture (second image)
-        that looks square on the 3D plane (first)?</span> To start over, <i>clear</i> your drawing
-        with the controls below.
-    </p>
-    <p></p>
-    <p>
-      Use the controls to modify position, size, or type of object, the texture mapping
-      interpolation method, or to reset the texture map to different defaults.
-      <span class="challenge"><b>Try it</b>: Change the model to the cube. Can you figure out which
-        parts of the texture are mapped to which cube face?</span>
-    </p>
     <canvas id="glcanvas" width="640" height="480" alt="3D rendering of an object covered with the texture from the 2D image."></canvas>
     <canvas id="texturecanvas" width="512" height="512" alt="2D image which is used to texture the 3D object."></canvas>
     <br/>
-    <fieldset>
-      <legend>Texture mapping</legend>
-      <input type="checkbox" value="nearest neighbor" id="nearestNeighbor" checked/>
-      <label for="nearestNeighbor">Nearest neighbor</label>
-    </fieldset>
     <fieldset>
       <legend>Object</legend>
       <label for="modelType">Model type</label>
@@ -61,8 +41,13 @@
       <input type="range" min="20" max="200" value="100" id="scale"/>
     </fieldset>
     <fieldset>
-      <legend>Reset</legend>
-      <label for="baseTextureType">Base texture</label>
+      <legend>Texture mapping</legend>
+      <input type="checkbox" value="nearest neighbor" id="nearestNeighbor" checked/>
+      <label for="nearestNeighbor">Nearest neighbor</label>
+    </fieldset>
+    <fieldset>
+      <legend>Reset texture</legend>
+      <label for="baseTextureType">Base</label>
       <select name="baseTextureType" id="baseTextureType">
         <option value="gradient">Gradient</option>
         <option value="grid">Simple grid</option>
@@ -73,14 +58,30 @@
       <br/>
       <input type="button" value="Reset" id="clear"></input>
     </fieldset>
+    <h2>Draw your own!</h2>
+    <p>
+      Click or tap and drag to draw on the 2D or 3D model see your drawings reflected into both the 
+      texture and the textured geometry. Note how different your drawings look in 2D or 3D! If you
+      draw a recognizable shape on one side it may get all warped on the other side.
+      <span class="challenge"><b>Challenge</b>: Can you draw a shape on the flat texture (second image)
+        that looks square on the 3D plane (first)?</span> Note, to start over, <i>clear</i> your drawing
+        with the controls above.
+    </p>
+    <p></p>
+    <p>
+      Use the controls to modify position, size, or type of object, the texture mapping
+      interpolation method, or to reset the texture map to different defaults.
+      <span class="challenge"><b>Challenge</b>: Change the model to the cube. Can you figure out which
+        parts of the texture are mapped to which cube face?</span>
+    </p>
   <h2>How does the demo work?</h2>
   <p>
     The demo uses 
     <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API" about="blank">WebGL</a>
     to create the 3D graphics, and an HTML5 Canvas element to create the texture. Much of the WebGL
-    code is quite similar to the 
+    code is quite similar or verbatim from the 
     <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial" about="blank">
-      Mozilla WebGL tutorial</a>, which was used when creating the demo.
+      Mozilla WebGL tutorial</a>.
   </p>
   <h3>Ray tracing</h3>
   <p>
@@ -92,10 +93,10 @@
     this entails:
   </p>
   <ol>
-    <li>Convert click point in (0, 0) to (640, 480) to screen point in (x, y) from (-1, -1) (1, 1), with z = 1.</li>
+    <li>Convert the pointer point from Canvas coordinates in (0, 0) to (640, 480) to screen coordinates with (x, y) from (-1, -1) (1, 1), and with z = 1.</li>
     <li>Create an unprojectMatrix which is (projectionMatrix * modelViewMatrix)<sup>-1</sup> </li>
-    <li>Get objectPoint = unprojectMatrix * screenPoint, in object coordinates</li>
-    <li>Create a camera point at (0, 0, 0), find the cameraPoint in object coordinates = modelViewMatrix<sup>-1</sup>  * cameraPoint</li>
+    <li>Get objectPoint = unprojectMatrix * screenPoint, representing the pointer in 3D in object coordinates</li>
+    <li>Create a camera point at (0, 0, 0), and find the cameraPoint in object coordinates, modelViewMatrix<sup>-1</sup>  * cameraPoint</li>
     <li>Create a ray with origin o at the cameraPoint and direction d = objectPoint - cameraPoint.</li>
     <li>For each triangle:</li>
     <ol>
@@ -104,7 +105,7 @@
       <li>Solve for [u, v, t] = M<sup>-1</sup>(o - p<sub>0</sub>)</li>
       <li>If t < any previous t, use (u, v) of the triangle to find the (u, v) texture coordinates by interpolating the texture coordinates of the vertices.</li>
     </ol>
-    <li>Use the (u, v) from the smallest t to draw on the texture</li>
+    <li>Use the (u, v) from the smallest t, scaled by the texture image (width, height), to figure out where to draw on the texture.</li>
   </ol>
   <h2>Feedback or suggestions?</h2>
   <p>
@@ -113,6 +114,7 @@
       github.com/dektar/texture_explorer</a>.
     <a href="https://github.com/dektar/texture_explorer/issues/new" about="blank">
       File an issue</a> on GitHub or send a pull request.</p>
+  <br/>
   <p>2024, Katie Dektar</p>
   </body>
 </html>
