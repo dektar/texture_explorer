@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=640, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebGL Demo</title>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"
@@ -23,9 +23,15 @@
       in the first compared to the second during the transformations that take it from object space
       to screen space.
     </p>
-    <canvas id="glcanvas" width="640" height="480" alt="3D rendering of an object covered with the texture from the 2D image."></canvas>
-    <canvas id="texturecanvas" width="512" height="512" alt="2D image which is used to texture the 3D object."></canvas>
-    <br/>
+    <div id="glCanvasHolder">
+      <canvas id="glcanvas" width="640" height="480" alt="3D rendering of an object covered with the texture from the 2D image."></canvas>
+      <div id="glcanvas_overlay" class="overlay" style="visibility: hidden;" width="1" height="480" alt=""></div>
+    </div>
+    <div id="textureCanvasHolder">
+      <canvas id="texturecanvas" width="512" height="512" alt="2D image which is used to texture the 3D object."></canvas>
+      <div id="texturecanvas_overlay" class="overlay" style="visibility: hidden;" width="1" height="512" alt=""></div>
+    </div>
+    <br clear="all"/>
     <fieldset>
       <legend>Object</legend>
       <label for="modelType">Model type</label>
@@ -94,7 +100,8 @@
       sonification! Rotate the sonification texture so that the horizontal line becomes very thin,
       at the back of the plane, and is close to, but not quite, flat. Sonfiy with and without 
       nearest neighbor texture mapping. 
-      <span class="challenge"><b>Challenge</b>: Why does nearest neighbor sound smoother?</span>
+      <span class="challenge"><b>Challenge</b>: Why does nearest neighbor sound smoother? (Hint: 
+        Sonification only happens for pure red pixels!)</span>
     </p>
     <h2>How does the demo work?</h2>
     <p>

@@ -72,6 +72,20 @@ function toggleSonification3d() {
   oscillator3d.onended = () => {
     stopSonification3d();
   }
+
+  const overlay = document.getElementById('glcanvas_overlay');
+  overlay.style.visibility='visible';
+  overlay.animate([
+      // keyframes
+      { transform: 'translateX(0px)' },
+      { transform: 'translateX(' + canvas.width + 'px)' },
+    ],{
+      // timing options
+      duration: (canvas.width + 1) * duration * 1000,
+      iterations: 1,
+    },
+  );
+
   document.getElementById('sonify3d').value = 'Stop';
 }
 
@@ -106,12 +120,14 @@ function toggleSonification2d() {
       }
     }
     if (!foundInColumn) {
+      // This column should be silent.
       oscillator2d.frequency.setValueAtTime(0, audioCtx.currentTime + duration * i);
     } else {
       foundAnyPixels = true;
     }
   }
   if (!foundAnyPixels) {
+    // Exit early if there's nothing at all to sonify.
     oscillator2d = null;
     stopSonification2d();
     return;
@@ -121,7 +137,21 @@ function toggleSonification2d() {
   oscillator2d.stop(audioCtx.currentTime + (canvas.width + 1) * duration);
   oscillator2d.onended = () => {
     stopSonification2d();
-  }
+  }  
+  
+  const overlay = document.getElementById('texturecanvas_overlay');
+  overlay.style.visibility='visible';
+  overlay.animate([
+      // keyframes
+      { transform: 'translateX(0px)' },
+      { transform: 'translateX(' + canvas.width + 'px)' },
+    ],{
+      // timing options
+      duration: (canvas.width + 1) * duration * 1000,
+      iterations: 1,
+    },
+  );
+
   document.getElementById('sonify2d').value = 'Stop';
 }
 
@@ -131,6 +161,7 @@ function stopSonification3d() {
     oscillator3d = null;
   }
   document.getElementById('sonify3d').value = 'Sonify 3D';
+  document.getElementById('glcanvas_overlay').style.visibility='hidden';
 }
 
 function stopSonification2d() {
@@ -139,6 +170,7 @@ function stopSonification2d() {
     oscillator2d = null;
   }
   document.getElementById('sonify2d').value = 'Sonify 2D';
+  document.getElementById('texturecanvas_overlay').style.visibility='hidden';
 }
 
 export { stopSonification2d, stopSonification3d, initializeSonificationListeners }

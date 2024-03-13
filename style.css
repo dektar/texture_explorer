@@ -46,20 +46,56 @@ fieldset {
   margin: 1em;
 }
 
+.overlay {
+  position:absolute;
+  top:0px;
+  left:0px;
+  width:2px;
+  background-color: rgb(129, 0, 108);
+  z-index: 10;
+}
+
+#glcanvas_overlay {
+  height: 480px;
+}
+
+#texturecanvas_overlay {
+  height: 512px;
+}
+
 canvas {
+  position:absolute;
+  top:0px;
+  left:0px;
   outline:4px solid #aaa;
+}
+
+#glCanvasHolder {
+  display: inline-block;
+  position:relative;
+  width:640px; 
+  height:480px;
   margin: 1em;
+}
+
+#textureCanvasHolder {
+  display: inline-block;
+  position:relative;
+  width:512px; 
+  height:512px;
 }
 
 #glcanvas {
   width:640px; 
   height:480px;
+  z-index: 1;
 }
 
 #texturecanvas {
   width:512px; 
   height:512px; 
   image-rendering: pixelated;
+  z-index: 1;
 }
 
 .challenge {
