@@ -51,7 +51,7 @@ function toggleSonification3d() {
         foundInColumn = true;
         // Height j determines pitch.
         // Width i determines time.
-        oscillator3d.frequency.setValueAtTime(100 + 2 * j, audioCtx.currentTime + duration * i); // value in hertz
+        oscillator3d.frequency.setValueAtTime(150 + 1.5 * j, audioCtx.currentTime + duration * i); // value in hertz
         break;
       }
     }
@@ -101,7 +101,7 @@ function toggleSonification2d() {
         foundInColumn = true;
         // Height j determines pitch.
         // Width i determines time.
-        oscillator2d.frequency.setValueAtTime(700 - j, audioCtx.currentTime + duration * i); // value in hertz
+        oscillator2d.frequency.setValueAtTime(900 - 1.5 * j, audioCtx.currentTime + duration * i); // value in hertz
         break;
       }
     }

@@ -16,7 +16,7 @@
     <h1>Texture mapping explorer</h1>
     <p>Katie Dektar / CS248A final project 2024</p>
     <p>Interactively visualize how a 2D texture map can be wrapped over geometry and projected into screen space.</p>
-    <h2>Warp speed</h2>
+    <h2>Image warp through texturing and projection</h2>
     <p>
       Below are two images. The first is is a 3D rendering of a textured model, and
       the second is a 2D visualization of texture space. You can see how the texture is warped
@@ -35,21 +35,13 @@
       </select>
       <br/>
       <label for="rotation">Rotation</label>
-      <input type="range" min="0" max="359" value="55" id="rotation"/>
+      <input type="range" min="0" max="359" value="30" id="rotation"/>
       <br/>
       <label for="scale">Object scale</label>
       <input type="range" min="20" max="200" value="100" id="scale"/>
     </fieldset>
     <fieldset>
-      <legend>Texture mapping</legend>
-      <input type="checkbox" value="nearest neighbor" id="nearestNeighbor" checked/>
-      <label for="nearestNeighbor">Nearest neighbor</label>
-      <br/>
-      <input type="button" value="Sonify 3D" id="sonify3d" disabled="true"></input>
-      <input type="button" value="Sonify 2D" id="sonify2d" disabled="true"></input>
-    </fieldset>
-    <fieldset>
-      <legend>Reset texture</legend>
+      <legend>Base texture</legend>
       <label for="baseTextureType">Base</label>
       <select name="baseTextureType" id="baseTextureType">
         <option value="gradient">Gradient</option>
@@ -60,7 +52,20 @@
         <option value="sonificationBase">Sonification base</option>
       </select>
       <br/>
-      <input type="button" value="Reset" id="clear"></input>
+      <input type="button" value="Clear" id="clear"></input>
+    </fieldset>
+    <fieldset>
+      <legend>Texture mapping</legend>
+      <input type="checkbox" value="nearest neighbor" id="nearestNeighbor" checked/>
+      <label for="nearestNeighbor">Nearest neighbor</label>
+      <br/>
+    </fieldset>
+    <fieldset id="sonificationSection" disabled="true">
+      <legend>Sonification</legend>
+      <span>Listen to the Sonification base texture</span>
+      <br/>
+      <input type="button" value="Sonify 3D" id="sonify3d"></input>
+      <input type="button" value="Sonify 2D" id="sonify2d"></input>
     </fieldset>
     <h2>Draw your own!</h2>
     <p>
@@ -68,57 +73,70 @@
       texture and the textured geometry. Note how different your drawings look in 2D or 3D! If you
       draw a recognizable shape on one side it may get all warped on the other side.
       <span class="challenge"><b>Challenge</b>: Can you draw a shape on the flat texture (second image)
-        that looks square on the 3D plane (first)?</span> Note, to start over, <i>Reset</i> your drawing
+        that looks square on the 3D plane (first)?</span> Note, to start over, <i>Clear</i> your drawing
         with the controls above.
     </p>
-    <p></p>
     <p>
       Use the controls to modify position, size, or type of object, the texture mapping
-      interpolation method, or to reset the texture map to different defaults.
+      interpolation method, or to change the base texture map to different defaults.
       <span class="challenge"><b>Challenge</b>: Change the model to the cube. Can you figure out which
         parts of the texture are mapped to which cube face?</span>
     </p>
-  <h2>How does the demo work?</h2>
-  <p>
-    The demo uses 
-    <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API" about="blank">WebGL</a>
-    to create the 3D graphics, and an HTML5 Canvas element to create the texture. Much of the WebGL
-    code is quite similar or verbatim from the 
-    <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial" about="blank">
-      Mozilla WebGL tutorial</a>.
-  </p>
-  <h3>Ray tracing</h3>
-  <p>
-    The most interesting part of the demo is mapping from 3D object space into 2D texture space
-    when the pointer is detected over the WebGL canvas element. This requires ray tracing a single
-    ray from the camera point through the perspective projection and into object space, then
-    intersecting it with the geometry, and finally interpolating the intersection point and the
-    (u,v) coordinates of the vertices to get the coordinates in texture space. In more detail,
-    this entails:
-  </p>
-  <ol>
-    <li>Convert the pointer point from Canvas coordinates in (0, 0) to (640, 480) to screen coordinates with (x, y) from (-1, -1) (1, 1), and with z = 1.</li>
-    <li>Create an unprojectMatrix which is (projectionMatrix * modelViewMatrix)<sup>-1</sup> </li>
-    <li>Get objectPoint = unprojectMatrix * screenPoint, representing the pointer in 3D in object coordinates</li>
-    <li>Create a camera point at (0, 0, 0), and find the cameraPoint in object coordinates, modelViewMatrix<sup>-1</sup>  * cameraPoint</li>
-    <li>Create a ray with origin o at the cameraPoint and direction d = objectPoint - cameraPoint.</li>
-    <li>For each triangle:</li>
+    <h2>Sonification</h2>
+    <p>If you are an auditory person, try the sonification texture. This generates a tone depending
+      for each pixel column depending on the height of the highest red pixel. 
+      <span class="challenge"><b>Challenge</b>: How does the same tune change between the texture map and the 3D
+        version and the 2D rendering as you scale or rotate the object in 3D?</span></p>
+    <p>You can also draw on the sonification template to create new sounds. <span class="challenge">
+      <b>Challenge</b>: Can you draw a song on one side? How does that song sound on the other side?
+    </span> (hint: draw short horizontal dashes for notes.)</p>
+    <p>You even also hear the difference between nearest neighbor and trilinear interpolation with 
+      sonification! Rotate the sonification texture so that the horizontal line becomes very thin,
+      at the back of the plane, and is close to, but not quite, flat. Sonfiy with and without 
+      nearest neighbor texture mapping. 
+      <span class="challenge"><b>Challenge</b>: Why does nearest neighbor sound smoother?</span>
+    </p>
+    <h2>How does the demo work?</h2>
+    <p>
+      The demo uses 
+      <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API" about="blank">WebGL</a>
+      to create the 3D graphics, and an HTML5 Canvas element to create the texture. Much of the WebGL
+      code is quite similar or verbatim from the 
+      <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial" about="blank">
+        Mozilla WebGL tutorial</a>.
+    </p>
+    <h3>Ray tracing</h3>
+    <p>
+      The most interesting part of the demo is mapping from 3D object space into 2D texture space
+      when the pointer is detected over the WebGL canvas element. This requires ray tracing a single
+      ray from the camera point through the perspective projection and into object space, then
+      intersecting it with the geometry, and finally interpolating the intersection point and the
+      (u,v) coordinates of the vertices to get the coordinates in texture space. In more detail,
+      this entails:
+    </p>
     <ol>
-      <li>Look up the vertices from the triangle indices</li>
-      <li>Create the matrix M = [p<sub>1</sub> - p<sub>0</sub>, p<sub>2</sub> - p<sub>0</sub>, -d]</li>
-      <li>Solve for [u, v, t] = M<sup>-1</sup>(o - p<sub>0</sub>)</li>
-      <li>If t < any previous t, use (u, v) of the triangle to find the (u, v) texture coordinates by interpolating the texture coordinates of the vertices.</li>
+      <li>Convert the pointer point from Canvas coordinates in (0, 0) to (640, 480) to screen coordinates with (x, y) from (-1, -1) (1, 1), and with z = 1.</li>
+      <li>Create an unprojectMatrix which is (projectionMatrix * modelViewMatrix)<sup>-1</sup> </li>
+      <li>Get objectPoint = unprojectMatrix * screenPoint, representing the pointer in 3D in object coordinates</li>
+      <li>Create a camera point at (0, 0, 0), and find the cameraPoint in object coordinates, modelViewMatrix<sup>-1</sup>  * cameraPoint</li>
+      <li>Create a ray with origin o at the cameraPoint and direction d = objectPoint - cameraPoint.</li>
+      <li>For each triangle:</li>
+      <ol>
+        <li>Look up the vertices from the triangle indices</li>
+        <li>Create the matrix M = [p<sub>1</sub> - p<sub>0</sub>, p<sub>2</sub> - p<sub>0</sub>, -d]</li>
+        <li>Solve for [u, v, t] = M<sup>-1</sup>(o - p<sub>0</sub>)</li>
+        <li>If t < any previous t, use (u, v) of the triangle to find the (u, v) texture coordinates by interpolating the texture coordinates of the vertices.</li>
+      </ol>
+      <li>Use the (u, v) from the smallest t, scaled by the texture image (width, height), to figure out where to draw on the texture.</li>
     </ol>
-    <li>Use the (u, v) from the smallest t, scaled by the texture image (width, height), to figure out where to draw on the texture.</li>
-  </ol>
-  <h2>Feedback or suggestions?</h2>
-  <p>
-    The code is open-source at 
-    <a href="https://github.com/dektar/texture_explorer" about="blank">
-      github.com/dektar/texture_explorer</a>.
-    <a href="https://github.com/dektar/texture_explorer/issues/new" about="blank">
-      File an issue</a> on GitHub or send a pull request.</p>
-  <br/>
-  <p>2024, Katie Dektar</p>
+    <h2>Feedback or suggestions?</h2>
+    <p>
+      The code is open-source at 
+      <a href="https://github.com/dektar/texture_explorer" about="blank">
+        github.com/dektar/texture_explorer</a>.
+      <a href="https://github.com/dektar/texture_explorer/issues/new" about="blank">
+        File an issue</a> on GitHub or send a pull request.</p>
+    <br/>
+    <p>2024, Katie Dektar</p>
   </body>
 </html>

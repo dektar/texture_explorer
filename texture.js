@@ -1,5 +1,11 @@
 import { stopSonification2d, stopSonification3d } from "./sonification.js";
 
+/**
+ * @fileoverview
+ * texture.js provides most of the logic for drawing the 2D texture
+ * canvas.
+ */
+
 // Sets up the canvas used for the texture. Takes a callback to be called
 // whenever the texture needs to be refreshed.
 // Also sets up the input elements' listeners.
@@ -13,6 +19,7 @@ function initializeTextureCanvas(refreshTextureCallback) {
   let height = textureCanvas.height;
   if (devicePixelRatio !== 1) {
     console.log('You have a high-density screen, I should do something here, which might also make browser zoom work properly.');
+    // This causes Android to have a black screen.
     // textureCanvas.width = width * devicePixelRatio;
     // textureCanvas.height = height * devicePixelRatio;
     // textureCanvas.style.width = width + 'px';
@@ -117,6 +124,11 @@ function initializeTextureCanvas(refreshTextureCallback) {
     refreshTexture();
   });
 
+  const texturePicker = document.getElementById('baseTextureType');
+  texturePicker.addEventListener('change', (event) => {
+    clearTexture(textureCanvas, refreshTexture, width, height);
+  });
+
   // This is used to do drawing when the mouse is moved over the 3D canvas.
   // It takes the (u,v) coordinate and maps it to the screen,
   // then draws a pixel / stroke at that point in the texture space.
@@ -151,19 +163,17 @@ function clearTexture(textureCanvas, refreshTexture, width, height) {
 
   const baseTextureType = document.getElementById('baseTextureType').value;
   if (baseTextureType === 'sonificationBase') {
-    document.getElementById('sonify3d').removeAttribute('disabled');
-    document.getElementById('sonify2d').removeAttribute('disabled');
+    document.getElementById('sonificationSection').removeAttribute('disabled');
     context.strokeStyle = "rgb(255 0 0)";
-    context.lineWidth = 10;
+    context.lineWidth = 6;
     context.beginPath();
-    context.moveTo(0, 2 * height / 3);
-    context.lineTo(width, 2 * height / 3);
+    context.moveTo(0, 4 * height / 5);
+    context.lineTo(width, 4 * height / 5);
     context.stroke();
     refreshTexture();
     return;
   } else {
-    document.getElementById('sonify3d').setAttribute('disabled', true);
-    document.getElementById('sonify2d').setAttribute('disabled', true);
+    document.getElementById('sonificationSection').setAttribute('disabled', true);
     stopSonification3d();
     stopSonification2d();
   }

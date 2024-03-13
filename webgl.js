@@ -1,5 +1,22 @@
-// python2 -m SimpleHTTPServer 9000
-// navigate to localhost:90000
+/**
+ * Hello! This class project has some tech debt and a lot of TODOs, but
+ * I hope you can still read the source and find what you are looking for.
+ * 
+ * TODOs:
+ *   Use classes and objects instead of having everything be functions.
+ *   Animated slider for sonification superimposed on or below the canvas
+ *   Add a sphere model
+ *   Load models from file (models would need per-vertex texture coordinates)
+ *   Undo/redo button by storing texture snapshot on pointer up
+ *   Use pointer events instead of touch and mouse events
+ *   Cross-browser testing/support
+ *   Drawing rects instead of just lines (would ray trace 4 points of corners, but may not
+ *      work on discontinuous texture maps)
+ * 
+ * To run locally:
+ * python2 -m SimpleHTTPServer 9000
+ * navigate to localhost:90000
+ */
 
 import { drawScene } from "./draw_scene.js";
 import { initBuffers } from "./init_buffers.js";
@@ -10,12 +27,10 @@ import { initializeSonificationListeners } from "./sonification.js";
 main();
 
 //
+// With lots of help from
 // https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/
 //
-function main() {
-  console.log('***\n*** Note: Touch points are offset when devtools is open.\n' +
-  '*** Consider opening it in a new window via chrome://inspect.\n***');
-  
+function main() { 
   const canvas = document.querySelector("#glcanvas");
   // Initialize the GL context
   const gl = canvas.getContext("webgl", {
