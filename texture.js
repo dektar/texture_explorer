@@ -1,3 +1,5 @@
+import { stopSonification2d, stopSonification3d } from "./sonification.js";
+
 // Sets up the canvas used for the texture. Takes a callback to be called
 // whenever the texture needs to be refreshed.
 // Also sets up the input elements' listeners.
@@ -36,9 +38,11 @@ function initializeTextureCanvas(refreshTextureCallback) {
     const x = clientX - bounds.left;
     const y = clientY - bounds.top;
     drawing = true;
-    // https://css-tricks.com/snippets/javascript/random-hex-color/
-    context.strokeStyle = '#' + Math.floor(Math.random()*16777215).toString(16);
-    context.lineWidth = 3;
+    if (document.getElementById('baseTextureType').value !== 'sonificationBase') {
+      // https://css-tricks.com/snippets/javascript/random-hex-color/
+      context.strokeStyle = '#' + Math.floor(Math.random()*16777215).toString(16);
+      context.lineWidth = 3;
+    }
     context.beginPath();
     context.moveTo(x - 1, y - 1);
     context.lineTo(x + 1, y + 1);
@@ -122,9 +126,11 @@ function initializeTextureCanvas(refreshTextureCallback) {
     const y = v * bounds.height;
 
     if (isStart) {
-      // https://css-tricks.com/snippets/javascript/random-hex-color/
-      context.strokeStyle = '#' + Math.floor(Math.random()*16777215).toString(16);
-      context.lineWidth = 3;
+      if (document.getElementById('baseTextureType').value !== 'sonificationBase') {
+        // https://css-tricks.com/snippets/javascript/random-hex-color/
+        context.strokeStyle = '#' + Math.floor(Math.random()*16777215).toString(16);
+        context.lineWidth = 3;
+      }
       context.beginPath();
       context.moveTo(x - 1, y - 1);
       context.lineTo(x + 1, y + 1);
@@ -144,6 +150,24 @@ function clearTexture(textureCanvas, refreshTexture, width, height) {
   context.clearRect(0, 0, width, height);
 
   const baseTextureType = document.getElementById('baseTextureType').value;
+  if (baseTextureType === 'sonificationBase') {
+    document.getElementById('sonify3d').removeAttribute('disabled');
+    document.getElementById('sonify2d').removeAttribute('disabled');
+    context.strokeStyle = "rgb(255 0 0)";
+    context.lineWidth = 10;
+    context.beginPath();
+    context.moveTo(0, 2 * height / 3);
+    context.lineTo(width, 2 * height / 3);
+    context.stroke();
+    refreshTexture();
+    return;
+  } else {
+    document.getElementById('sonify3d').setAttribute('disabled', true);
+    document.getElementById('sonify2d').setAttribute('disabled', true);
+    stopSonification3d();
+    stopSonification2d();
+  }
+
   if (baseTextureType === 'grey') {
     context.fillStyle = 'rgb(220 220 220)';
     context.fillRect(0, 0, width, height);

@@ -5,6 +5,7 @@ import { drawScene } from "./draw_scene.js";
 import { initBuffers } from "./init_buffers.js";
 import { initializeTextureCanvas } from "./texture.js";
 import { initializeUnprojectListeners } from "./webgl_unproject.js";
+import { initializeSonificationListeners } from "./sonification.js";
 
 main();
 
@@ -17,7 +18,9 @@ function main() {
   
   const canvas = document.querySelector("#glcanvas");
   // Initialize the GL context
-  const gl = canvas.getContext("webgl");
+  const gl = canvas.getContext("webgl", {
+    preserveDrawingBuffer: true,
+  });
 
   // Only continue if WebGL is available and working
   if (gl === null) {
@@ -103,6 +106,7 @@ function main() {
   });
 
   initializeUnprojectListeners(canvas, drawAtTextureUV);
+  initializeSonificationListeners();
 }
 
 //

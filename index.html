@@ -35,7 +35,7 @@
       </select>
       <br/>
       <label for="rotation">Rotation</label>
-      <input type="range" min="0" max="359" value="30" id="rotation"/>
+      <input type="range" min="0" max="359" value="55" id="rotation"/>
       <br/>
       <label for="scale">Object scale</label>
       <input type="range" min="20" max="200" value="100" id="scale"/>
@@ -44,6 +44,9 @@
       <legend>Texture mapping</legend>
       <input type="checkbox" value="nearest neighbor" id="nearestNeighbor" checked/>
       <label for="nearestNeighbor">Nearest neighbor</label>
+      <br/>
+      <input type="button" value="Sonify 3D" id="sonify3d" disabled="true"></input>
+      <input type="button" value="Sonify 2D" id="sonify2d" disabled="true"></input>
     </fieldset>
     <fieldset>
       <legend>Reset texture</legend>
@@ -54,6 +57,7 @@
         <option value="uv_grid">UV grid</option>
         <option value="grey">Grey</option>
         <option value="cat">Cat</option>
+        <option value="sonificationBase">Sonification base</option>
       </select>
       <br/>
       <input type="button" value="Reset" id="clear"></input>
@@ -64,7 +68,7 @@
       texture and the textured geometry. Note how different your drawings look in 2D or 3D! If you
       draw a recognizable shape on one side it may get all warped on the other side.
       <span class="challenge"><b>Challenge</b>: Can you draw a shape on the flat texture (second image)
-        that looks square on the 3D plane (first)?</span> Note, to start over, <i>clear</i> your drawing
+        that looks square on the 3D plane (first)?</span> Note, to start over, <i>Reset</i> your drawing
         with the controls above.
     </p>
     <p></p>
