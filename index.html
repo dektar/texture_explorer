@@ -89,8 +89,8 @@
         parts of the texture are mapped to which cube face?</span>
     </p>
     <h2>Sonification</h2>
-    <p>If you are an auditory person, try the sonification texture. This generates a tone depending
-      for each pixel column depending on the height of the highest red pixel. 
+    <p>If you are an auditory person, try the sonification texture. This generates a tone
+      for each pixel column depending on the height of the highest red pixel in the frame.
       <span class="challenge"><b>Challenge</b>: How does the same tune change between the texture map and the 3D
         version and the 2D rendering as you scale or rotate the object in 3D?</span></p>
     <p>You can also draw on the sonification template to create new sounds. <span class="challenge">
@@ -114,12 +114,22 @@
     </p>
     <h3>Ray tracing</h3>
     <p>
-      The most interesting part of the demo is mapping from 3D object space into 2D texture space
+      To get drawing to work, the demo does a mapping from 3D object space into 2D texture space
       when the pointer is detected over the WebGL canvas element. This requires ray tracing a single
       ray from the camera point through the perspective projection and into object space, then
       intersecting it with the geometry, and finally interpolating the intersection point and the
-      (u,v) coordinates of the vertices to get the coordinates in texture space. In more detail,
-      this entails:
+      (u,v) coordinates of the vertices to get the coordinates in texture space.
+    </p>
+    <p>
+    3D object space is represented on the right in the shaded grey region of the diagram below. You
+    can imagine that the WebGL canvas's camera is situated at position (0, 0, 0). The 3D objects
+    in the scene are first offset from their own origins by a model view matrix (that moves them
+    into the grey region on the right), and then they are warped by the perspective projection
+    that represents how the camera can see them. Then individual rays can be sent from (0, 0, 0)
+    through an (x, y) point on the screen to see where they intersect with the screen. 
+    <img src="frustrum.png" width="640px" alt="diagram of view frustrum mapping a region of object space to unit cube">
+    </p>
+    <p>In detail, this mapping entails:
     </p>
     <ol>
       <li>Convert the pointer point from Canvas coordinates in (0, 0) to (640, 480) to screen coordinates with (x, y) from (-1, -1) (1, 1), and with z = 1.</li>
